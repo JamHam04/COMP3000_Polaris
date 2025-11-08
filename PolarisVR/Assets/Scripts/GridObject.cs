@@ -28,41 +28,6 @@ public class GridObject : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Movement test input (move to input system script later)
-
-        Vector3Int targetCell = currentCell;
-
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            targetCell += Vector3Int.forward;
-            MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            targetCell += Vector3Int.back;
-            MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            targetCell += Vector3Int.left;
-            MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            targetCell += Vector3Int.right;
-            MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.E)) {
-            targetCell += Vector3Int.up;
-            MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.Q)) {
-            targetCell += Vector3Int.down;
-            MoveToCell(targetCell);
-        }
-
-
-        
 
 
     }
