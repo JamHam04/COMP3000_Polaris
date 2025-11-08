@@ -83,6 +83,18 @@ public class GridController : MonoBehaviour
         return false;
     }
 
+    // Check grid bounds
+    public bool IsInGrid(Vector3Int cellCoords)
+    {
+        if (cellCoords.x >= 0 && cellCoords.x < gridX &&
+            cellCoords.y >= 0 && cellCoords.y < gridY &&
+            cellCoords.z >= 0 && cellCoords.z < gridZ)
+        {
+            return true;
+        }
+        return false;
+    }
+
     // Object enters cell
     public void EnterCell(Vector3Int cellCoords, GridObject obj)
     {
@@ -94,7 +106,7 @@ public class GridController : MonoBehaviour
     }
 
     // Object leaves cell
-    public void LeaveCell(Vector3Int cellCoords)
+    public void ExitCell(Vector3Int cellCoords)
     {
         // Remove from dictionary
         if (occupiedCells.ContainsKey(cellCoords))
