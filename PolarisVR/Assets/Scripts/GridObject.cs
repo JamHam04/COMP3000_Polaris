@@ -11,6 +11,9 @@ public class GridObject : MonoBehaviour
     public Vector3Int currentCell;
     private GridController gridController;
 
+    public GameObject faceHighlightPrefab;
+    private GameObject activeHighlight;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,6 +60,25 @@ public class GridObject : MonoBehaviour
         }
 
 
+    }
+
+    public void HighlightFace(RaycastHit hit)
+    {
+
+        // Instantiate new highlight
+        activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
+
+        // Position and direction based on raycast hit
+        activeHighlight.transform.position = transform.position + hit.normal * (gridController.cellSize / 2f); // position at face (spawn at centre of face)
+        activeHighlight.transform.rotation = Quaternion.LookRotation(-hit.normal); // face direction
+    }
+
+    public void ClearHighlight()
+    {
+        if (activeHighlight != null)
+        {
+            Destroy(activeHighlight);
+        }
     }
 
 }

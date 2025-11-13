@@ -8,6 +8,7 @@ public class GrdObjectInput : MonoBehaviour
 {
     
     private GridObject gridObject;
+    private GridObject lastHoveredObject;
 
 
 
@@ -120,13 +121,32 @@ public class GrdObjectInput : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
         {
-            Debug.Log("Hit: " + hit.collider.gameObject.name);
+            // Get GridObject component from hit object
             gridObject = hit.collider.gameObject.GetComponent<GridObject>();
+
+            // Highlight face on hit
+            if (gridObject != lastHoveredObject)
+            {
+                // Clear last highlight (prevent multiple highlights)
+                if (lastHoveredObject != null)
+                {
+                    lastHoveredObject.ClearHighlight();
+                }
+
+                // Highlight new face
+                if (gridObject != null)
+                {
+                    gridObject.HighlightFace(hit);
+                }
+                lastHoveredObject = gridObject; // Update prevous hovered object
+            }
+
+            
 
             if (gridObject != null)
             {
                 // Check if magnet button is pressed
-                
+
                 if (magnetJustActivated)
                 {
                     Vector3Int dir = getControllerDirection();
@@ -135,7 +155,16 @@ public class GrdObjectInput : MonoBehaviour
                 }
             }
 
-         }
+        }
+        else
+        {
+            // Clear highlight if no longer hovering
+            if (lastHoveredObject != null)
+            {
+                lastHoveredObject.ClearHighlight();
+                lastHoveredObject = null;
+            }
+        }
     }
 
     // Get direction from controller
