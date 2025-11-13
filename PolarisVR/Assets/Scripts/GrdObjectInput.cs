@@ -16,6 +16,8 @@ public class GrdObjectInput : MonoBehaviour
     public InputActionProperty magnetAction; // Set activate value
 
     public float activationThreshold = 0.1f; // Threshold for button press
+    private bool wasMagnetActivated= false; 
+    private bool isMagnetActivated = false; 
 
     // Raycast
     public float raycastDistance = 10.0f; // To be used for magnet target
@@ -91,15 +93,28 @@ public class GrdObjectInput : MonoBehaviour
     void activateMagnetInput()
     {
 
-        bool isMagnetActivated = false;
-        // Check if magnet button is pressed
+        bool magnetJustActivated = false;
 
+        // Check if magnet button is pressed
         float magnetValue = magnetAction.action.ReadValue<float>();
+
         if (magnetValue > activationThreshold)
         {
             isMagnetActivated = true;
         }
-        
+        else
+        {
+            isMagnetActivated = false;
+        }
+
+        // Check if magnet is activated again 
+        if (isMagnetActivated && !wasMagnetActivated)
+        {
+            magnetJustActivated = true;
+        }
+        // Update previous state
+        wasMagnetActivated = isMagnetActivated;
+
 
         // Cast ray from controller
         RaycastHit hit;
@@ -112,9 +127,11 @@ public class GrdObjectInput : MonoBehaviour
             {
                 // Check if magnet button is pressed
                 
-                if (isMagnetActivated)
+                if (magnetJustActivated)
                 {
-                    gridObject.MoveToCell(gridObject.currentCell + getControllerDirection());
+                    Vector3Int dir = getControllerDirection();
+                    if (isLeftHand) dir = -dir; // Pull for left hand
+                    gridObject.MoveToCell(gridObject.currentCell + dir);
                 }
             }
 
