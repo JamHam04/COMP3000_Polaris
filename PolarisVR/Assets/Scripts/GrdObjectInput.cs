@@ -9,7 +9,7 @@ public class GrdObjectInput : MonoBehaviour
     
     private GridObject gridObject;
     private GridObject lastHoveredObject;
-
+    public Transform playerTransform;
 
 
     // XR Toolkit button input
@@ -45,6 +45,9 @@ public class GrdObjectInput : MonoBehaviour
     {
         // Movement pc test input 
         //testInput();
+
+
+        updateHighlight();
 
         // VR input for magnet push/pull
         activateMagnetInput();
@@ -117,6 +120,25 @@ public class GrdObjectInput : MonoBehaviour
         wasMagnetActivated = isMagnetActivated;
 
 
+
+        if (magnetJustActivated && gridObject != null && playerTransform != null)
+        {
+            // Check if magnet button is pressed
+                if (lastHoveredObject.canActivateMagnet(playerTransform))
+                {
+                    Vector3Int dir = getControllerDirection();
+                    if (isLeftHand) dir = -dir; // Pull for left hand
+                    lastHoveredObject.MoveToCell(gridObject.currentCell + dir);
+                }
+                else
+                {
+                    Debug.Log("Cannot activate magnet: Player not in front of face");
+                }
+        }
+    }
+
+    void updateHighlight()
+    {
         // Cast ray from controller
         RaycastHit hit;
         if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
@@ -125,37 +147,31 @@ public class GrdObjectInput : MonoBehaviour
             gridObject = hit.collider.gameObject.GetComponent<GridObject>();
 
             // Highlight face on hit
-            if (gridObject != lastHoveredObject)
+            if (gridObject != null )
             {
-                // Clear last highlight (prevent multiple highlights)
-                if (lastHoveredObject != null)
-                {
-                    lastHoveredObject.ClearHighlight();
-                }
+                    if (gridObject.canActivateMagnet(playerTransform)) // use player transform
+                    {
+                        // Claer previous highlight when hovering over new object
+                        if (lastHoveredObject != gridObject)
+                        {
+                            // Clear last highlight (prevent multiple highlights)
+                            if (lastHoveredObject != null)
+                            {
+                                lastHoveredObject.ClearHighlight();
+                            }
 
-                // Highlight new face
-                if (gridObject != null)
-                {
-                    gridObject.HighlightFace(hit);
-                }
-                lastHoveredObject = gridObject; // Update prevous hovered object
-            }
+                            lastHoveredObject = gridObject; // Update prevous hovered object
+                        }
 
-            
+                        // Highlight new face
+                        gridObject.HighlightFace(hit);
 
-            if (gridObject != null)
-            {
-                // Check if magnet button is pressed
+                    }
 
-                if (magnetJustActivated)
-                {
-                    Vector3Int dir = getControllerDirection();
-                    if (isLeftHand) dir = -dir; // Pull for left hand
-                    gridObject.MoveToCell(gridObject.currentCell + dir);
-                }
             }
 
         }
+
         else
         {
             // Clear highlight if no longer hovering
@@ -165,6 +181,7 @@ public class GrdObjectInput : MonoBehaviour
                 lastHoveredObject = null;
             }
         }
+
     }
 
     // Get direction from controller
@@ -204,6 +221,7 @@ public class GrdObjectInput : MonoBehaviour
             Gizmos.DrawRay(rayOrigin.position, rayOrigin.forward * raycastDistance);
         }
     }
+
 
 
 

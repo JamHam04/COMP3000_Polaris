@@ -8,6 +8,7 @@ using UnityEngine;
 public class GridObject : MonoBehaviour
 {
     
+    
     public Vector3Int currentCell;
     private GridController gridController;
 
@@ -66,11 +67,18 @@ public class GridObject : MonoBehaviour
     {
 
         // Instantiate new highlight
-        activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
+        if (activeHighlight == null)
+        {
+            activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
+        }
+        
 
         // Position and direction based on raycast hit
         activeHighlight.transform.position = transform.position + hit.normal * (gridController.cellSize / 2f); // position at face (spawn at centre of face)
         activeHighlight.transform.rotation = Quaternion.LookRotation(-hit.normal); // face direction
+
+        // Apply position offset
+        activeHighlight.transform.position += hit.normal * 0.01f;
     }
 
     public void ClearHighlight()
@@ -78,7 +86,29 @@ public class GridObject : MonoBehaviour
         if (activeHighlight != null)
         {
             Destroy(activeHighlight);
+
         }
+    }
+
+
+    public bool canActivateMagnet(Transform player)
+    {
+        // Check player position 
+        Vector3 playerPos = player.position;
+
+        // Check is player is in front of gridobject face
+        Vector3 toPlayer = (playerPos - transform.position).normalized;
+        float facingDirection = Vector3.Dot(transform.forward, toPlayer); // Positive if facing player (ONLY CHECKS FRONT FACE)
+        // check all faces
+
+
+        //Debug.Log("Facing direction: " + facingDirection);
+        if (facingDirection < 0.2f)
+        {
+            return false; // Player is behind the face
+        }
+
+        return true;
     }
 
 }
