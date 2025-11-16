@@ -91,19 +91,22 @@ public class GridObject : MonoBehaviour
     }
 
 
-    public bool canActivateMagnet(Transform player)
+    public bool canActivateMagnet(Transform player, Vector3 faceNormal)
     {
         // Check player position 
         Vector3 playerPos = player.position;
 
+
+
         // Check is player is in front of gridobject face
-        Vector3 toPlayer = (playerPos - transform.position).normalized;
-        float facingDirection = Vector3.Dot(transform.forward, toPlayer); // Positive if facing player (ONLY CHECKS FRONT FACE)
-        // check all faces
+        Vector3 faceCenter = transform.position + faceNormal * (gridController.cellSize / 2f); // Cube face center
+        Vector3 toPlayer = (playerPos - faceCenter).normalized;
+        float facingDirection = Vector3.Dot(faceNormal, toPlayer); 
+        
 
 
         //Debug.Log("Facing direction: " + facingDirection);
-        if (facingDirection < 0.2f)
+        if (facingDirection < 0.4f)
         {
             return false; // Player is behind the face
         }

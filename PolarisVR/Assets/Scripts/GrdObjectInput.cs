@@ -124,16 +124,16 @@ public class GrdObjectInput : MonoBehaviour
         if (magnetJustActivated && gridObject != null && playerTransform != null)
         {
             // Check if magnet button is pressed
-                if (lastHoveredObject.canActivateMagnet(playerTransform))
+            RaycastHit hit;
+            if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
+            {
+                if (lastHoveredObject != null && lastHoveredObject.canActivateMagnet(playerTransform, hit.normal))
                 {
-                    Vector3Int dir = getControllerDirection();
-                    if (isLeftHand) dir = -dir; // Pull for left hand
+                    Vector3Int dir = getActivationDirection(hit.normal);
+                    if (isRightHand) dir = -dir; // Pull for left hand
                     lastHoveredObject.MoveToCell(gridObject.currentCell + dir);
                 }
-                else
-                {
-                    Debug.Log("Cannot activate magnet: Player not in front of face");
-                }
+            }
         }
     }
 
@@ -149,7 +149,7 @@ public class GrdObjectInput : MonoBehaviour
             // Highlight face on hit
             if (gridObject != null )
             {
-                    if (gridObject.canActivateMagnet(playerTransform)) // use player transform
+                    if (gridObject.canActivateMagnet(playerTransform, hit.normal)) // use player transform
                     {
                         // Claer previous highlight when hovering over new object
                         if (lastHoveredObject != gridObject)
@@ -210,6 +210,27 @@ public class GrdObjectInput : MonoBehaviour
         }
 
 
+    }
+
+    Vector3Int getActivationDirection(Vector3 hitNormal)
+    {
+        // Determine direction based on hit normal
+
+        // X axis
+        if (Mathf.Abs(hitNormal.x) > 0.5f)
+        {
+            return new Vector3Int((int)hitNormal.x, 0, 0);
+        }
+        // Y axis
+        else if (Mathf.Abs(hitNormal.y) > 0.5f)
+        {
+            return new Vector3Int(0, (int)hitNormal.y, 0);
+        }
+        // Z axis
+        else
+        {
+            return new Vector3Int(0, 0, (int)hitNormal.z);
+        }
     }
 
     // Test raycasrt
