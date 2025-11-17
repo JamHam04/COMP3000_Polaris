@@ -38,7 +38,7 @@ public class GridObject : MonoBehaviour
 
     public void MoveToCell(Vector3Int newCell)
     {
-        if (!gridController.IsCellOccupied(newCell) && gridController.IsInGrid(newCell))
+        if (!gridController.IsCellOccupied(newCell) && gridController.IsInGrid(newCell) && !gridController.IsCellDisabled(newCell))
         {
             // Exit current cell
             gridController.ExitCell(currentCell);
@@ -101,12 +101,16 @@ public class GridObject : MonoBehaviour
         // Check is player is in front of gridobject face
         Vector3 faceCenter = transform.position + faceNormal * (gridController.cellSize / 2f); // Cube face center
         Vector3 toPlayer = (playerPos - faceCenter).normalized;
-        float facingDirection = Vector3.Dot(faceNormal, toPlayer); 
-        
+
+        // Facing direction check
+        float facingDirection = Vector3.Dot(faceNormal, toPlayer);
+
+        // Distance check 
+        float distanceToPlayer = Vector3.Distance(playerPos, faceCenter);
 
 
         //Debug.Log("Facing direction: " + facingDirection);
-        if (facingDirection < 0.4f)
+        if (facingDirection < 0.4f || distanceToPlayer > gridController.cellSize * 2f)
         {
             return false; // Player is behind the face
         }

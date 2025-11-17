@@ -43,56 +43,19 @@ public class GrdObjectInput : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Movement pc test input 
-        //testInput();
-
 
         updateHighlight();
 
         // VR input for magnet push/pull
         activateMagnetInput();
 
-        //Debug.Log(xrController.transform.forward);
+
 
     }
 
-    void testInput()
-    {
+   
 
-        Vector3Int targetCell = gridObject.currentCell;
-
-        if (Input.GetKeyDown(KeyCode.W))
-        {
-            targetCell += Vector3Int.forward;
-            gridObject.MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            targetCell += Vector3Int.back;
-            gridObject.MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            targetCell += Vector3Int.left;
-            gridObject.MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.D))
-        {
-            targetCell += Vector3Int.right;
-            gridObject.MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.E))
-        {
-            targetCell += Vector3Int.up;
-            gridObject.MoveToCell(targetCell);
-        }
-        if (Input.GetKeyDown(KeyCode.Q))
-        {
-            targetCell += Vector3Int.down;
-            gridObject.MoveToCell(targetCell);
-        }
-
-    }
+    
 
     void activateMagnetInput()
     {
@@ -139,7 +102,11 @@ public class GrdObjectInput : MonoBehaviour
 
     void updateHighlight()
     {
-        // Cast ray from controller
+        // To do:
+        // Use different highlight for each hand, prioritize most recent hand
+        // Unhighlifht when moving off face
+
+        // Cast ray from controller 
         RaycastHit hit;
         if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
         {

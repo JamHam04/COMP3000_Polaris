@@ -14,15 +14,15 @@ public class GridController : MonoBehaviour
 
     // Grid cell occupancy
     private Dictionary<Vector3Int, GridObject> occupiedCells = new Dictionary<Vector3Int, GridObject>(); // Dictionary of occupied cells
-    public List<Vector3Int> disabledCells = new List<Vector3Int>();
-
+    public List<DisabledSection> disabledRegions = new List<DisabledSection>();
 
 
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
+
 
     // Update is called once per frame
     void Update()
@@ -67,8 +67,7 @@ public class GridController : MonoBehaviour
                 for (int z = 0; z < gridZ; z++)
                 {
                     // Skip disabled cells
-                    if (disabledCells.Contains(new Vector3Int(x, y, z)))
-                        continue;
+                    if (IsCellDisabled(new Vector3Int(x, y, z))) continue; // Don't draw disabled cells
                     Vector3 pos = CellToWorld(new Vector3Int(x, y, z));
                     Gizmos.DrawWireCube(pos, Vector3.one * cellSize);
                 }
@@ -89,6 +88,24 @@ public class GridController : MonoBehaviour
         return false;
     }
 
+    // If cell is disabled
+    public bool IsCellDisabled(Vector3Int cell)
+    {
+        // Loop through disabled regions
+        foreach (var section in disabledRegions)
+        {
+            // Check if cell is within disabled section
+            if (cell.x >= section.startCell.x && cell.x < section.startCell.x + section.size.x &&
+                cell.y >= section.startCell.y && cell.y < section.startCell.y + section.size.y &&
+                cell.z >= section.startCell.z && cell.z < section.startCell.z + section.size.z)
+            {
+                return true; // Cell is disabled
+            }
+        }
+        return false; // Cell is not disabled
+    }
+
+
     // Check grid bounds
     public bool IsInGrid(Vector3Int cellCoords)
     {
@@ -101,19 +118,11 @@ public class GridController : MonoBehaviour
         return false;
     }
 
-    // Disable specific cell
-    public void DisableCell(Vector3Int cellCoords)
-    {
-        if (!disabledCells.Contains(cellCoords))
-        {
-            disabledCells.Add(cellCoords);
-        }
-
-    }
 
     // Object enters cell
     public void EnterCell(Vector3Int cellCoords, GridObject obj)
     {
+        
         // Add the object and position to dictionary
         if (!occupiedCells.ContainsKey(cellCoords))
         {
