@@ -152,10 +152,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridX: 10
-  gridY: 1
+  gridY: 5
   gridZ: 10
   cellSize: 1
   gridCoordinates: {x: 0, y: 0, z: 0}
+  disabledRegions:
+  - startCell: {x: 0, y: 0, z: 5}
+    size: {x: 5, y: 5, z: 6}
+  - startCell: {x: 8, y: 0, z: 5}
+    size: {x: 2, y: 7, z: 3}
 --- !u!4 &74999623
 Transform:
   m_ObjectHideFlags: 0
@@ -3457,7 +3462,7 @@ Transform:
   m_GameObject: {fileID: 2040901757}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.72, y: 0.522, z: 5.28}
+  m_LocalPosition: {x: 3.72, y: 0.522, z: 4.459}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

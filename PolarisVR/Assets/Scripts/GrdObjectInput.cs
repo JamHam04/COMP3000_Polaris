@@ -19,6 +19,8 @@ public class GrdObjectInput : MonoBehaviour
     public float activationThreshold = 0.1f; // Threshold for button press
     private bool wasMagnetActivated= false; 
     private bool isMagnetActivated = false; 
+    public float magnetCooldown = 0.5f; // Cooldown time between activations
+    public float cooldownTimer = 0.0f;
 
     // Raycast
     public float raycastDistance = 10.0f; // To be used for magnet target
@@ -31,6 +33,7 @@ public class GrdObjectInput : MonoBehaviour
     public bool isRightHand = false;
 
     // 
+
 
 
 
@@ -49,7 +52,10 @@ public class GrdObjectInput : MonoBehaviour
         // VR input for magnet push/pull
         activateMagnetInput();
 
-
+        if (cooldownTimer > 0.0f)
+        {
+            cooldownTimer -= Time.deltaTime;
+        }
 
     }
 
@@ -84,7 +90,7 @@ public class GrdObjectInput : MonoBehaviour
 
 
 
-        if (magnetJustActivated && gridObject != null && playerTransform != null)
+        if (magnetJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f)
         {
             // Check if magnet button is pressed
             RaycastHit hit;
@@ -95,6 +101,7 @@ public class GrdObjectInput : MonoBehaviour
                     Vector3Int dir = getActivationDirection(hit.normal);
                     if (isRightHand) dir = -dir; // Pull for left hand
                     lastHoveredObject.MoveToCell(gridObject.currentCell + dir);
+                    cooldownTimer = magnetCooldown; // Reset cooldown
                 }
             }
         }
@@ -119,7 +126,8 @@ public class GrdObjectInput : MonoBehaviour
                     if (gridObject.canActivateMagnet(playerTransform, hit.normal)) // use player transform
                     {
                         // Claer previous highlight when hovering over new object
-                        if (lastHoveredObject != gridObject)
+                        
+                    if (lastHoveredObject != gridObject || (lastHoveredObject.highlightedFace - hit.normal).sqrMagnitude > 0.01f)
                         {
                             // Clear last highlight (prevent multiple highlights)
                             if (lastHoveredObject != null)
@@ -132,22 +140,23 @@ public class GrdObjectInput : MonoBehaviour
 
                         // Highlight new face
                         gridObject.HighlightFace(hit);
-
+                        return; 
                     }
 
             }
 
         }
 
-        else
+        
+
+
+        // Clear highlight if no longer hovering
+        if (lastHoveredObject != null)
         {
-            // Clear highlight if no longer hovering
-            if (lastHoveredObject != null)
-            {
-                lastHoveredObject.ClearHighlight();
-                lastHoveredObject = null;
-            }
+            lastHoveredObject.ClearHighlight();
+            lastHoveredObject = null;
         }
+
 
     }
 

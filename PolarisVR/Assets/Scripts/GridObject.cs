@@ -14,6 +14,10 @@ public class GridObject : MonoBehaviour
 
     public GameObject faceHighlightPrefab;
     private GameObject activeHighlight;
+    public Vector3 highlightedFace;
+
+    public float CellSize => gridController.cellSize;
+
 
     // Start is called before the first frame update
     void Start()
@@ -70,8 +74,11 @@ public class GridObject : MonoBehaviour
         if (activeHighlight == null)
         {
             activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
+            activeHighlight.transform.SetParent(transform); // parent to grid object
         }
-        
+
+        highlightedFace = hit.normal;
+
 
         // Position and direction based on raycast hit
         activeHighlight.transform.position = transform.position + hit.normal * (gridController.cellSize / 2f); // position at face (spawn at centre of face)
@@ -86,36 +93,52 @@ public class GridObject : MonoBehaviour
         if (activeHighlight != null)
         {
             Destroy(activeHighlight);
+            activeHighlight = null;
+            highlightedFace = Vector3.zero;
 
         }
     }
 
 
-    public bool canActivateMagnet(Transform player, Vector3 faceNormal)
+    public bool canActivateMagnet(Transform playerHead, Vector3 faceNormal)
     {
-        // Check player position 
-        Vector3 playerPos = player.position;
-
-
 
         // Check is player is in front of gridobject face
         Vector3 faceCenter = transform.position + faceNormal * (gridController.cellSize / 2f); // Cube face center
-        Vector3 toPlayer = (playerPos - faceCenter).normalized;
-
-        // Facing direction check
-        float facingDirection = Vector3.Dot(faceNormal, toPlayer);
-
-        // Distance check 
-        float distanceToPlayer = Vector3.Distance(playerPos, faceCenter);
 
 
-        //Debug.Log("Facing direction: " + facingDirection);
-        if (facingDirection < 0.4f || distanceToPlayer > gridController.cellSize * 2f)
+
+        // Distance check (add back later)
+        //float distanceToPlayer = Vector3.Distance(playerPos, faceCenter);
+
+        Vector3 toPlayer = (playerHead.position - faceCenter).normalized;
+        float toPlayerDot = Vector3.Dot(faceNormal, toPlayer);
+
+        // Check if player is in front of face
+        if (toPlayerDot < 0.4f)
         {
             return false; // Player is behind the face
         }
 
+        
+        Vector3 toFace = (faceCenter - playerHead.position).normalized;
+        float toFaceDot = Vector3.Dot(playerHead.forward, toFace);
+
+        // Check if player is looking at face
+        if (toFaceDot < 0.5f)
+        {
+            return false; // Player is not looking at the face
+        }
+
+        // Controller checks??
+       
+
+
+
         return true;
+
     }
+
+
 
 }
