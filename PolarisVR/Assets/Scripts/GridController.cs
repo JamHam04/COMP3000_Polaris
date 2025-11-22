@@ -140,6 +140,12 @@ public class GridController : MonoBehaviour
         }
     }
 
+    public bool playerInCell(Vector3Int cellCoords, Transform playerTransform)
+    {
+        Vector3Int playerCell = worldToCell(playerTransform.position);
+        return playerCell == cellCoords;
+    }
+
 
 
 }

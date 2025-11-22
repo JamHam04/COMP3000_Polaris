@@ -100,7 +100,11 @@ public class GrdObjectInput : MonoBehaviour
                 {
                     Vector3Int dir = getActivationDirection(hit.normal);
                     if (isRightHand) dir = -dir; // Pull for left hand
-                    lastHoveredObject.MoveToCell(gridObject.currentCell + dir);
+
+
+                    Vector3Int targetCell = gridObject.currentCell + dir; // Target cell to move to
+ 
+                    lastHoveredObject.MoveToCell(targetCell);
                     cooldownTimer = magnetCooldown; // Reset cooldown
                 }
             }

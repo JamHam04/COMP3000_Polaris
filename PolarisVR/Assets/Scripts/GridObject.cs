@@ -18,6 +18,9 @@ public class GridObject : MonoBehaviour
 
     public float CellSize => gridController.cellSize;
 
+    private Coroutine moveCoroutine; // Cube movement
+    public float cubeMoveSpeed = 5f; // Speed of cube movement
+
 
     // Start is called before the first frame update
     void Start()
@@ -39,6 +42,20 @@ public class GridObject : MonoBehaviour
 
 
     }
+    private IEnumerator MoveToPosition(Vector3 targetPosition, float cubeMoveSpeed)
+    {
+        Vector3 startPosition = transform.position;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < cubeMoveSpeed)
+        {
+            transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime / cubeMoveSpeed);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = targetPosition; // Grid position
+    }
 
     public void MoveToCell(Vector3Int newCell)
     {
@@ -53,19 +70,19 @@ public class GridObject : MonoBehaviour
             // Enter new cell
             gridController.EnterCell(newCell, this);
 
+            // Stop previous movement
+            if (moveCoroutine != null)
+                StopCoroutine(moveCoroutine);
 
-            // Move object to new cell
-            transform.position = gridController.CellToWorld(newCell);
-
-            
+            // Smooth movement to new cell
+            moveCoroutine = StartCoroutine(MoveToPosition(gridController.CellToWorld(newCell), cubeMoveSpeed));
         }
         else
         {
             Debug.Log("Cell occupied");
         }
-
-
     }
+
 
     public void HighlightFace(RaycastHit hit)
     {
@@ -131,13 +148,14 @@ public class GridObject : MonoBehaviour
         }
 
         // Controller checks??
-       
 
-
+        // Vertical angle check:
 
         return true;
 
     }
+
+
 
 
 
