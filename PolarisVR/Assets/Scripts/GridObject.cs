@@ -19,8 +19,9 @@ public class GridObject : MonoBehaviour
     public float CellSize => gridController.cellSize;
 
     private Coroutine moveCoroutine; // Cube movement
-    public float cubeMoveSpeed = 5f; // Speed of cube movement
+    private float cubeMoveSpeed = 0.5f; // Speed of cube movement
 
+    public HashSet<Vector3Int> disabledFaces = new HashSet<Vector3Int>(); // Disabled faces based on occupied adjacent cells
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +43,17 @@ public class GridObject : MonoBehaviour
 
 
     }
+
+    public void DisableFace(Vector3Int faceNormal)
+    {
+        disabledFaces.Add(faceNormal);
+    }
+
+    public void EnableFace(Vector3Int faceNormal)
+    {
+        disabledFaces.Remove(faceNormal);
+    }
+
     private IEnumerator MoveToPosition(Vector3 targetPosition, float cubeMoveSpeed)
     {
         Vector3 startPosition = transform.position;
@@ -76,6 +88,7 @@ public class GridObject : MonoBehaviour
 
             // Smooth movement to new cell
             moveCoroutine = StartCoroutine(MoveToPosition(gridController.CellToWorld(newCell), cubeMoveSpeed));
+            UpdateDisabledFaces(); // Update disabled faces after moving
         }
         else
         {
@@ -119,20 +132,25 @@ public class GridObject : MonoBehaviour
 
     public bool canActivateMagnet(Transform playerHead, Vector3 faceNormal)
     {
+        Vector3Int faceNormalInt = new Vector3Int(
+            Mathf.RoundToInt(faceNormal.x),
+            Mathf.RoundToInt(faceNormal.y),
+            Mathf.RoundToInt(faceNormal.z)
+        );
+
+        if (disabledFaces.Contains(faceNormalInt))
+            return false;
 
         // Check is player is in front of gridobject face
         Vector3 faceCenter = transform.position + faceNormal * (gridController.cellSize / 2f); // Cube face center
 
-
-
-        // Distance check (add back later)
         //float distanceToPlayer = Vector3.Distance(playerPos, faceCenter);
 
         Vector3 toPlayer = (playerHead.position - faceCenter).normalized;
         float toPlayerDot = Vector3.Dot(faceNormal, toPlayer);
 
         // Check if player is in front of face
-        if (toPlayerDot < 0.4f)
+        if (toPlayerDot < 0.2f)
         {
             return false; // Player is behind the face
         }
@@ -142,10 +160,16 @@ public class GridObject : MonoBehaviour
         float toFaceDot = Vector3.Dot(playerHead.forward, toFace);
 
         // Check if player is looking at face
-        if (toFaceDot < 0.5f)
+        if (toFaceDot < 0.3f)
         {
             return false; // Player is not looking at the face
         }
+
+
+        // Distance checks
+        float maxDistance = gridController.cellSize * 2f;
+        if (Vector3.Distance(playerHead.position, faceCenter) > maxDistance)
+            return false;
 
         // Controller checks??
 
@@ -155,8 +179,35 @@ public class GridObject : MonoBehaviour
 
     }
 
+    public void UpdateDisabledFaces()
+    {
+        disabledFaces.Clear(); // Reset disabled faces on move
 
+        // Directions for cube faces
+        Vector3Int[] directions = {
+        Vector3Int.right, Vector3Int.left,
+        Vector3Int.up, Vector3Int.down,
+        Vector3Int.forward, Vector3Int.back
+    };
 
+        // Check each adjacent cell
+        foreach (var dir in directions)
+        {
+            Vector3Int adjacentCell = currentCell + dir;
+            // Check if cell is occupied 
+            if (gridController.IsCellOccupied(adjacentCell))
+            {
+                DisableFace(dir); // Disable face 
+            }
+            // Leave face enabled
+            else
+            {
+                EnableFace(dir);
+            }
+        }
+    }
+
+    
 
 
 }
