@@ -851,7 +851,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f65ee75065d1f540ac83e8ffcffe0a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 229269695}
+  playerTransform: {fileID: 451916064}
   xrController: {fileID: 149796516}
   magnetAction:
     m_UseReference: 1
@@ -924,7 +924,7 @@ GameObject:
   - component: {fileID: 229269699}
   m_Layer: 0
   m_Name: XR Origin (XR Rig)
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2246,7 +2246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f65ee75065d1f540ac83e8ffcffe0a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerTransform: {fileID: 229269695}
+  playerTransform: {fileID: 451916064}
   xrController: {fileID: 567181349}
   magnetAction:
     m_UseReference: 1
