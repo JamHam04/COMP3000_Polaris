@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum CubeType
+{
+    Red,
+    Blue,
+    Purple
+}
 
 
 
@@ -22,6 +28,10 @@ public class GridObject : MonoBehaviour
     private float cubeMoveSpeed = 0.5f; // Speed of cube movement
 
     public HashSet<Vector3Int> disabledFaces = new HashSet<Vector3Int>(); // Disabled faces based on occupied adjacent cells
+
+    // Cube type
+
+    public CubeType cubeType;
 
     // Start is called before the first frame update
     void Start()

@@ -16,10 +16,35 @@ public class GridController : MonoBehaviour
     private Dictionary<Vector3Int, GridObject> occupiedCells = new Dictionary<Vector3Int, GridObject>(); // Dictionary of occupied cells
     public List<DisabledSection> disabledRegions = new List<DisabledSection>();
 
+    public GameObject floorCellPrefab;
 
-    // Start is called before the first frame update
     void Start()
     {
+
+        for (int x = 0; x < gridX; x++)
+        {
+            for (int z = 0; z < gridZ; z++)
+            {
+                Vector3Int cell = new Vector3Int(x, 0, z); 
+
+                if (IsCellDisabled(cell)) continue; // skip disabled cells
+
+                // Spawn floor cell
+                GameObject floorCell = Instantiate(floorCellPrefab, transform);
+                GameObject roofCell = Instantiate(floorCellPrefab, transform);
+
+                Vector3 pos = CellToWorld(cell);
+                pos.y = gridCoordinates.y + 0.0001f;
+                floorCell.transform.position = pos; // set position
+
+                pos.y = gridCoordinates.y + gridY;
+                roofCell.transform.Rotate(180f, 0f, 0f);
+                roofCell.transform.position = pos; // set position
+
+
+            }
+        }
+
 
     }
 
@@ -146,6 +171,14 @@ public class GridController : MonoBehaviour
         return playerCell == cellCoords;
     }
 
+    public GridObject GetCubeInCell(Vector3Int cellCoords)
+    {
+        if (occupiedCells.ContainsKey(cellCoords))
+        {
+            return occupiedCells[cellCoords];
+        }
+        return null;
+    }
 
 
 }

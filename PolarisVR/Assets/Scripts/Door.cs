@@ -8,15 +8,18 @@ public class Door : MonoBehaviour
     // Door state
     private bool isOpen = false;
 
+    // Triggers needed to open/close door
+    public List<CellTrigger> linkedTriggers = new List<CellTrigger>(); // Link triggers through door instead of triggers linking to door?
+
+    // Check if all linked triggers are active:
 
 
-   public void OpenDoor()
+    public void OpenDoor()
     {
         if (!isOpen)
         {
             isOpen = true;
             gameObject.SetActive(false);
-            Debug.Log("Door opened");
         }
     }
     public void CloseDoor()
@@ -25,7 +28,6 @@ public class Door : MonoBehaviour
         {
             isOpen = false;
             gameObject.SetActive(true);
-            Debug.Log("Door closed");
         }
     }
 }

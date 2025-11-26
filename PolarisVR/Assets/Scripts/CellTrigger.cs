@@ -14,7 +14,10 @@ public class CellTrigger : MonoBehaviour
     private bool isTriggerActive = false;
     private GridController gridController;
 
-    public Renderer frameRenderer; 
+    public Renderer frameRenderer;
+    
+    // Trigger type
+    public CubeType triggerType;
 
     // Start is called before the first frame update
     void Start()
@@ -33,7 +36,11 @@ public class CellTrigger : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (gridController.IsCellOccupied(triggerCell))
+
+        // Get cube in trigger cell
+        GridObject cubeInCell = gridController.GetCubeInCell(triggerCell);
+        // Check if cube type matches trigger type
+        if (cubeInCell != null && cubeInCell.cubeType == triggerType)
         {
             if (!isTriggerActive)
             {
@@ -55,6 +62,7 @@ public class CellTrigger : MonoBehaviour
                 SetFrameEmission(false);
             }
         }
+
     }
 
     // Enable and disable emission on frame
