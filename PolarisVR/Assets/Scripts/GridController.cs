@@ -14,6 +14,7 @@ public class GridController : MonoBehaviour
 
     // Grid cell occupancy
     private Dictionary<Vector3Int, GridObject> occupiedCells = new Dictionary<Vector3Int, GridObject>(); // Dictionary of occupied cells
+    private Dictionary<Vector3Int, GridObject> reservedCells = new Dictionary<Vector3Int, GridObject>(); // Dictionary of reserved cells
     public List<DisabledSection> disabledRegions = new List<DisabledSection>();
 
     public GameObject floorCellPrefab;
@@ -106,6 +107,14 @@ public class GridController : MonoBehaviour
         return false;
     }
 
+    public bool IsCellReserved(Vector3Int cell)
+    {
+        if (reservedCells.ContainsKey(cell)) {
+            return true;
+        }
+        return false;
+    }
+
     // If cell is disabled
     public bool IsCellDisabled(Vector3Int cell)
     {
@@ -153,6 +162,24 @@ public class GridController : MonoBehaviour
         if (occupiedCells.ContainsKey(cellCoords))
         {
             occupiedCells.Remove(cellCoords);
+        }
+    }
+
+    // Reserve cell
+    public void ReserveCell(Vector3Int cellCoords, GridObject obj)
+    {
+        if (!reservedCells.ContainsKey(cellCoords))
+        {
+            reservedCells.Add(cellCoords, obj);
+        }
+    }
+
+    // Unreserve cell
+    public void UnreserveCell(Vector3Int cellCoords)
+    {
+        if (reservedCells.ContainsKey(cellCoords))
+        {
+            reservedCells.Remove(cellCoords);
         }
     }
 

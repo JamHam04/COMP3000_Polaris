@@ -30,6 +30,7 @@ public class GridObject : MonoBehaviour
     public HashSet<Vector3Int> disabledFaces = new HashSet<Vector3Int>(); // Disabled faces based on occupied adjacent cells
 
     Transform playerTransform;
+    private bool isMoving = false;
 
     // Cube type
 
@@ -89,7 +90,7 @@ public class GridObject : MonoBehaviour
             if (distanceToPlayer < gridController.cellSize * 0.7f) 
             {
                 cubeCollider.enabled = true; // Re-enable collider
-                yield return StartCoroutine(BounceBack(startPosition, startCell));
+                yield return StartCoroutine(BounceBack(startPosition, startCell, newCell));
                 yield break;
             }
 
@@ -102,13 +103,19 @@ public class GridObject : MonoBehaviour
         // Re-enable collider after movement
         cubeCollider.enabled = true;
 
+        // Exit current cell
         gridController.ExitCell(currentCell);
+        // Update current cell
         currentCell = newCell;
+        // Enter new cell
         gridController.EnterCell(newCell, this);
-        UpdateDisabledFaces();
+        // Unreserve new cell
+        gridController.UnreserveCell(newCell);
+        isMoving = false;
+        UpdateDisabledFaces(); // Update disabled faces after moving
     }
 
-    private IEnumerator BounceBack(Vector3 startPosition, Vector3Int startCell)
+    private IEnumerator BounceBack(Vector3 startPosition, Vector3Int startCell, Vector3Int newCell)
     {
         Vector3 currentPosition = transform.position;
         float elapsedTime = 0f;
@@ -122,28 +129,26 @@ public class GridObject : MonoBehaviour
         }
 
         transform.position = startPosition;
+
+        gridController.UnreserveCell(newCell);
+        isMoving = false;
+        currentCell = startCell;
     }
 
     public void MoveToCell(Vector3Int newCell)
     {
-        if (!gridController.IsCellOccupied(newCell) && gridController.IsInGrid(newCell) && !gridController.IsCellDisabled(newCell))
+
+        if (isMoving)
+            return;
+
+        if (!gridController.IsCellOccupied(newCell) && gridController.IsInGrid(newCell) && !gridController.IsCellDisabled(newCell) && !gridController.IsCellReserved (newCell))
         {
-            //// Exit current cell
-            //gridController.ExitCell(currentCell);
+            gridController.ReserveCell(newCell, this); // Reserve new cell
 
-            //// Update current cell
-            //currentCell = newCell;
-
-            //// Enter new cell
-            //gridController.EnterCell(newCell, this);
-
-            // Stop previous movement
-            if (moveCoroutine != null)
-                StopCoroutine(moveCoroutine);
+            isMoving = true;
 
             // Smooth movement to new cell
             moveCoroutine = StartCoroutine(MoveToPosition(gridController.CellToWorld(newCell), newCell, cubeMoveSpeed));
-            //UpdateDisabledFaces(); // Update disabled faces after moving
         }
         else
         {
