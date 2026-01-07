@@ -40,14 +40,9 @@ public class GridController : MonoBehaviour
                 pos.y = gridCoordinates.y + gridY;
                 roofCell.transform.Rotate(180f, 0f, 0f);
                 roofCell.transform.position = pos; // set position
-
-
             }
         }
-
-
     }
-
 
     // Update is called once per frame
     void Update()
@@ -78,7 +73,6 @@ public class GridController : MonoBehaviour
         return new Vector3(x, y, z) + gridCoordinates; // Add grid start offset
     }
 
-
     // Draw grid for visualization
     private void OnDrawGizmos()
     {
@@ -100,7 +94,6 @@ public class GridController : MonoBehaviour
             }
         }
     }
-
 
     // If cell is occupied
     public bool IsCellOccupied(Vector3Int cellCoords)
@@ -130,7 +123,6 @@ public class GridController : MonoBehaviour
         return false; // Cell is not disabled
     }
 
-
     // Check grid bounds
     public bool IsInGrid(Vector3Int cellCoords)
     {
@@ -142,7 +134,6 @@ public class GridController : MonoBehaviour
         }
         return false;
     }
-
 
     // Object enters cell
     public void EnterCell(Vector3Int cellCoords, GridObject obj)
@@ -179,7 +170,6 @@ public class GridController : MonoBehaviour
         }
         return null;
     }
-
 
 }
 

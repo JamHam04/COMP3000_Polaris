@@ -29,6 +29,8 @@ public class GridObject : MonoBehaviour
 
     public HashSet<Vector3Int> disabledFaces = new HashSet<Vector3Int>(); // Disabled faces based on occupied adjacent cells
 
+    Transform playerTransform;
+
     // Cube type
 
     public CubeType cubeType;
@@ -37,7 +39,10 @@ public class GridObject : MonoBehaviour
     void Start()
     {
         // Get GridController script
-        gridController = FindObjectOfType<GridController>(); 
+        gridController = FindObjectOfType<GridController>();
+
+        // Get player transform
+        playerTransform = Camera.main.transform;
 
         // Initialize current cell
         currentCell = gridController.worldToCell(transform.position);
@@ -64,41 +69,81 @@ public class GridObject : MonoBehaviour
         disabledFaces.Remove(faceNormal);
     }
 
-    private IEnumerator MoveToPosition(Vector3 targetPosition, float cubeMoveSpeed)
+    private IEnumerator MoveToPosition(Vector3 targetPosition, Vector3Int newCell, float cubeMoveSpeed)
     {
         Vector3 startPosition = transform.position;
+        Vector3Int startCell = currentCell;
         float elapsedTime = 0f;
+
+        // Disable collider during movement (Prevent falling through floor)
+        // Change to different method later?
+        Collider cubeCollider = GetComponent<Collider>();
+        cubeCollider.enabled = false;
 
         while (elapsedTime < cubeMoveSpeed)
         {
+            // Check distance to player
+            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+
+            // If hitting player
+            if (distanceToPlayer < gridController.cellSize * 0.7f) 
+            {
+                cubeCollider.enabled = true; // Re-enable collider
+                yield return StartCoroutine(BounceBack(startPosition, startCell));
+                yield break;
+            }
+
             transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime / cubeMoveSpeed);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        transform.position = targetPosition; // Grid position
+        transform.position = targetPosition;
+        // Re-enable collider after movement
+        cubeCollider.enabled = true;
+
+        gridController.ExitCell(currentCell);
+        currentCell = newCell;
+        gridController.EnterCell(newCell, this);
+        UpdateDisabledFaces();
+    }
+
+    private IEnumerator BounceBack(Vector3 startPosition, Vector3Int startCell)
+    {
+        Vector3 currentPosition = transform.position;
+        float elapsedTime = 0f;
+
+        // Move back to start position
+        while (elapsedTime < cubeMoveSpeed)
+        {
+            transform.position = Vector3.Lerp(currentPosition, startPosition, elapsedTime / cubeMoveSpeed);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = startPosition;
     }
 
     public void MoveToCell(Vector3Int newCell)
     {
         if (!gridController.IsCellOccupied(newCell) && gridController.IsInGrid(newCell) && !gridController.IsCellDisabled(newCell))
         {
-            // Exit current cell
-            gridController.ExitCell(currentCell);
+            //// Exit current cell
+            //gridController.ExitCell(currentCell);
 
-            // Update current cell
-            currentCell = newCell;
+            //// Update current cell
+            //currentCell = newCell;
 
-            // Enter new cell
-            gridController.EnterCell(newCell, this);
+            //// Enter new cell
+            //gridController.EnterCell(newCell, this);
 
             // Stop previous movement
             if (moveCoroutine != null)
                 StopCoroutine(moveCoroutine);
 
             // Smooth movement to new cell
-            moveCoroutine = StartCoroutine(MoveToPosition(gridController.CellToWorld(newCell), cubeMoveSpeed));
-            UpdateDisabledFaces(); // Update disabled faces after moving
+            moveCoroutine = StartCoroutine(MoveToPosition(gridController.CellToWorld(newCell), newCell, cubeMoveSpeed));
+            //UpdateDisabledFaces(); // Update disabled faces after moving
         }
         else
         {

@@ -25,17 +25,12 @@ public class GrdObjectInput : MonoBehaviour
     // Raycast
     public float raycastDistance = 10.0f; // To be used for magnet target
     public Transform rayOrigin;
-   
-
 
     // Left or right hand controller
     public bool isLeftHand = false;
     public bool isRightHand = false;
 
     // 
-
-
-
 
     // Start is called before the first frame update
     void Start()
@@ -56,12 +51,7 @@ public class GrdObjectInput : MonoBehaviour
         {
             cooldownTimer -= Time.deltaTime;
         }
-
     }
-
-   
-
-    
 
     void activateMagnetInput()
     {
@@ -87,8 +77,6 @@ public class GrdObjectInput : MonoBehaviour
         }
         // Update previous state
         wasMagnetActivated = isMagnetActivated;
-
-
 
         if (magnetJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f)
         {
@@ -146,13 +134,8 @@ public class GrdObjectInput : MonoBehaviour
                         gridObject.HighlightFace(hit);
                         return; 
                     }
-
             }
-
         }
-
-        
-
 
         // Clear highlight if no longer hovering
         if (lastHoveredObject != null)
@@ -188,8 +171,6 @@ public class GrdObjectInput : MonoBehaviour
         {
             return new Vector3Int(0, 0, forward.z > 0 ? 1 : -1);
         }
-
-
     }
 
     Vector3Int getActivationDirection(Vector3 hitNormal)
@@ -222,8 +203,5 @@ public class GrdObjectInput : MonoBehaviour
             Gizmos.DrawRay(rayOrigin.position, rayOrigin.forward * raycastDistance);
         }
     }
-
-
-
 
 }
