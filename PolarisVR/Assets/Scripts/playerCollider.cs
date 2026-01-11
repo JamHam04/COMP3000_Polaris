@@ -23,16 +23,17 @@ public class PlayerCollider : MonoBehaviour
         {
             headsetPosition = Camera.main.transform;
         }
+
     }
 
 
     void FixedUpdate()
     {
         if (headsetPosition == null) return;
-        UpdateCapsule();
+        UpdateCollider();
     }
 
-    void UpdateCapsule()
+    void UpdateCollider()
     {
         // Y position of headset
         float headsetY = headsetPosition.position.y - transform.position.y;

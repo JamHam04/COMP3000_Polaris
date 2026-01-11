@@ -32,6 +32,8 @@ public class GridObject : MonoBehaviour
     Transform playerTransform;
     private bool isMoving = false;
 
+    private Renderer cubeRenderer;
+
     // Cube type
 
     public CubeType cubeType;
@@ -41,6 +43,9 @@ public class GridObject : MonoBehaviour
     {
         // Get GridController script
         gridController = FindObjectOfType<GridController>();
+
+        // Get Renderer for frame
+        cubeRenderer = GetComponent<Renderer>();
 
         // Get player transform
         playerTransform = Camera.main.transform;
@@ -79,7 +84,7 @@ public class GridObject : MonoBehaviour
         // Disable collider during movement (Prevent falling through floor)
         // Change to different method later?
         Collider cubeCollider = GetComponent<Collider>();
-        cubeCollider.enabled = false;
+        //cubeCollider.enabled = false;
 
         while (elapsedTime < cubeMoveSpeed)
         {
@@ -89,7 +94,7 @@ public class GridObject : MonoBehaviour
             // If hitting player
             if (distanceToPlayer < gridController.cellSize * 0.7f) 
             {
-                cubeCollider.enabled = true; // Re-enable collider
+                //cubeCollider.enabled = true; // Re-enable collider
                 yield return StartCoroutine(BounceBack(startPosition, startCell, newCell));
                 yield break;
             }
@@ -101,7 +106,7 @@ public class GridObject : MonoBehaviour
 
         transform.position = targetPosition;
         // Re-enable collider after movement
-        cubeCollider.enabled = true;
+        //cubeCollider.enabled = true;
 
         // Exit current cell
         gridController.ExitCell(currentCell);
@@ -113,6 +118,8 @@ public class GridObject : MonoBehaviour
         gridController.UnreserveCell(newCell);
         isMoving = false;
         UpdateDisabledFaces(); // Update disabled faces after moving
+
+
     }
 
     private IEnumerator BounceBack(Vector3 startPosition, Vector3Int startCell, Vector3Int newCell)
@@ -163,19 +170,23 @@ public class GridObject : MonoBehaviour
         // Instantiate new highlight
         if (activeHighlight == null)
         {
-            activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
-            activeHighlight.transform.SetParent(transform); // parent to grid object
+            //activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
+            activeHighlight = Instantiate(faceHighlightPrefab, transform);
+            activeHighlight.transform.localPosition = Vector3.zero;
+            //activeHighlight.transform.localRotation = Quaternion.identity;
+            activeHighlight.transform.localScale = Vector3.one;
+            // parent to grid object
         }
 
         highlightedFace = hit.normal;
 
 
         // Position and direction based on raycast hit
-        activeHighlight.transform.position = transform.position + hit.normal * (gridController.cellSize / 2f); // position at face (spawn at centre of face)
-        activeHighlight.transform.rotation = Quaternion.LookRotation(-hit.normal); // face direction
+        ////activeHighlight.transform.position = transform.position + hit.normal * (gridController.cellSize / 2f); // position at face (spawn at centre of face)
+        activeHighlight.transform.rotation = Quaternion.LookRotation(hit.normal); // face direction
 
         // Apply position offset
-        activeHighlight.transform.position += hit.normal * 0.01f;
+        //activeHighlight.transform.position += hit.normal * 0.01f;
     }
 
     public void ClearHighlight()
@@ -267,7 +278,17 @@ public class GridObject : MonoBehaviour
         }
     }
 
-    
+    public void SetEmission(bool enableGlow)
+    {
+        if (enableGlow)
+        {
+            cubeRenderer.material.EnableKeyword("_EMISSION"); // Enable emission
+        }
+        else
+        {
+            cubeRenderer.material.DisableKeyword("_EMISSION"); // Diable emission
+        }
+    }
 
 
 }

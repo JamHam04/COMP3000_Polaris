@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7928645799658268158}
   - component: {fileID: 1942259311590110866}
   - component: {fileID: 434795413057751285}
-  - component: {fileID: 6475708363440757437}
+  - component: {fileID: -7354271497494179193}
   m_Layer: 0
   m_Name: wallCubeTile
   m_TagString: Untagged
@@ -452,8 +452,8 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 87785085276320675}
   m_Mesh: {fileID: 0}
---- !u!64 &6475708363440757437
-MeshCollider:
+--- !u!65 &-7354271497494179193
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -470,7 +470,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
+  serializedVersion: 3
+  m_Size: {x: 2, y: 2, z: 2}
+  m_Center: {x: -1, y: 1, z: -1}

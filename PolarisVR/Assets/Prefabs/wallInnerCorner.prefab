@@ -13,7 +13,6 @@ GameObject:
   - component: {fileID: 3006695500899880742}
   - component: {fileID: 2860329454858925741}
   - component: {fileID: 8052944996797080111}
-  - component: {fileID: 4698296088411763571}
   - component: {fileID: -3339642211611277305}
   m_Layer: 0
   m_Name: wallInnerCorner
@@ -453,28 +452,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5460369695520037651}
   m_Mesh: {fileID: 0}
---- !u!64 &4698296088411763571
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5460369695520037651}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 0}
 --- !u!65 &-3339642211611277305
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -494,5 +471,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 2, y: 2, z: 2}
+  m_Center: {x: -1, y: 1, z: -1}

@@ -13,6 +13,7 @@ public class CellTrigger : MonoBehaviour
     // Trigger state
     private bool isTriggerActive = false;
     private GridController gridController;
+    private GridObject activeCube;
 
     public Renderer frameRenderer;
     
@@ -46,9 +47,11 @@ public class CellTrigger : MonoBehaviour
             {
                 // Activate linked dI oor
                 isTriggerActive = true;
+                activeCube = cubeInCell;
                 triggeredDoor.OpenDoor();
                 Debug.Log("Trigger activated");
                 SetFrameEmission(true);
+                activeCube.SetEmission(true);
             }
         }
         else
@@ -60,10 +63,13 @@ public class CellTrigger : MonoBehaviour
                 isTriggerActive = false;
                 Debug.Log("Trigger deactivated");
                 SetFrameEmission(false);
+                activeCube.SetEmission(false);
             }
         }
 
     }
+
+
 
     // Enable and disable emission on frame
     public void SetFrameEmission(bool enableGlow)
