@@ -21,6 +21,7 @@ public class CellTrigger : MonoBehaviour
     // Trigger type
     public CubeType triggerType;
 
+
     // Start is called before the first frame update
     void Start()
     {
