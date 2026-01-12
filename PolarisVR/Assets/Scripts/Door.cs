@@ -9,17 +9,36 @@ public class Door : MonoBehaviour
     private bool isOpen = false;
 
     // Triggers needed to open/close door
-    public List<CellTrigger> linkedTriggers = new List<CellTrigger>(); // Link triggers through door instead of triggers linking to door?
+    public List<CellTrigger> linkedTriggers = new List<CellTrigger>(); 
 
-    // Check if all linked triggers are active:
+    void Update()
+    {
+        CheckTriggers();
+    }
 
+    // Check if all linked triggers are active
+    public void CheckTriggers()
+    {
+        foreach (CellTrigger trigger in linkedTriggers)
+        {
+            if (!trigger.IsTriggerActive)
+            {
+                CloseDoor();
+                return;
+            }
+        }
+        OpenDoor();
+    }
 
     public void OpenDoor()
     {
         if (!isOpen)
         {
             isOpen = true;
-            gameObject.SetActive(false);
+            //gameObject.SetActive(false);
+            //doorCollider.enabled = false;
+            // Animate door opening
+
         }
     }
     public void CloseDoor()
@@ -27,7 +46,8 @@ public class Door : MonoBehaviour
         if (isOpen)
         {
             isOpen = false;
-            gameObject.SetActive(true);
+            //doorCollider.enabled = true;
+            //gameObject.SetActive(true);
         }
     }
 }

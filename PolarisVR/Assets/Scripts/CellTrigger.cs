@@ -7,13 +7,14 @@ public class CellTrigger : MonoBehaviour
     // Trigger cell
     public Vector3Int triggerCell;
 
-    // Link door 
-    public Door triggeredDoor;
-
     // Trigger state
     private bool isTriggerActive = false;
+    public bool IsTriggerActive => isTriggerActive;
+
+    // Grid
     private GridController gridController;
     private GridObject activeCube;
+    
 
     public Renderer frameRenderer;
     
@@ -40,35 +41,32 @@ public class CellTrigger : MonoBehaviour
 
         // Get cube in trigger cell
         GridObject cubeInCell = gridController.GetCubeInCell(triggerCell);
+
+        bool triggerActivated = (cubeInCell != null && cubeInCell.cubeType == triggerType);
+
         // Check if cube type matches trigger type
-        if (cubeInCell != null && cubeInCell.cubeType == triggerType)
+        if (triggerActivated != isTriggerActive)
         {
-            if (!isTriggerActive)
+            
+            isTriggerActive = triggerActivated;
+            SetFrameEmission(triggerActivated);
+
+            if (activeCube != null)
             {
-                // Activate linked dI oor
-                isTriggerActive = true;
-                activeCube = cubeInCell;
-                triggeredDoor.OpenDoor();
-                Debug.Log("Trigger activated");
-                SetFrameEmission(true);
-                activeCube.SetEmission(true);
-            }
-        }
-        else
-        {
-            if (isTriggerActive)
-            {
-                // Deactivate linked door
-                triggeredDoor.CloseDoor();
-                isTriggerActive = false;
-                Debug.Log("Trigger deactivated");
-                SetFrameEmission(false);
                 activeCube.SetEmission(false);
             }
+            if (isTriggerActive)
+            {
+                activeCube = cubeInCell;
+  
+            }
+            else
+            {
+                activeCube = null;
+            }
+            
         }
-
     }
-
 
 
     // Enable and disable emission on frame

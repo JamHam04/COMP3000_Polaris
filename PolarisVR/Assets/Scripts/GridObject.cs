@@ -200,25 +200,46 @@ public class GridObject : MonoBehaviour
         }
     }
 
+    // Snap to axis 
+    public static Vector3Int SnapNormal(Vector3 normal)
+    {
+        // Normalize
+        normal.Normalize();
+
+        // Get absolute values of each axis
+        float absX = Mathf.Abs(normal.x);
+        float absY = Mathf.Abs(normal.y);
+        float absZ = Mathf.Abs(normal.z);
+
+        // Pick the axis with largest absolute value
+        if (absX >= absY && absX >= absZ)
+            return new Vector3Int(normal.x > 0 ? 1 : -1, 0, 0);
+        else if (absY >= absX && absY >= absZ)
+            return new Vector3Int(0, normal.y > 0 ? 1 : -1, 0);
+        else
+            return new Vector3Int(0, 0, normal.z > 0 ? 1 : -1);
+    }
 
     public bool canActivateMagnet(Transform playerHead, Vector3 faceNormal)
     {
-        Vector3Int faceNormalInt = new Vector3Int(
-            Mathf.RoundToInt(faceNormal.x),
-            Mathf.RoundToInt(faceNormal.y),
-            Mathf.RoundToInt(faceNormal.z)
-        );
+        Vector3Int snappedFaceNormal = SnapNormal(faceNormal); // Use snapped normal for face direction
+        Vector3Int adjacentCell = currentCell + snappedFaceNormal; // Check adjacent cell in face normal direction
 
-        if (disabledFaces.Contains(faceNormalInt))
+        // Check if face is disabled
+        if (gridController.IsCellOccupied(adjacentCell))
+            return false;
+
+        // Check if cell is inside grid bounds
+        if (!gridController.IsInGrid(adjacentCell))
             return false;
 
         // Check is player is in front of gridobject face
-        Vector3 faceCenter = transform.position + faceNormal * (gridController.cellSize / 2f); // Cube face center
+        Vector3 faceCenter = transform.position + (Vector3)snappedFaceNormal * (gridController.cellSize / 2f);// Cube face center
 
         //float distanceToPlayer = Vector3.Distance(playerPos, faceCenter);
 
         Vector3 toPlayer = (playerHead.position - faceCenter).normalized;
-        float toPlayerDot = Vector3.Dot(faceNormal, toPlayer);
+        float toPlayerDot = Vector3.Dot(snappedFaceNormal, toPlayer);
 
         // Check if player is in front of face
         if (toPlayerDot < 0.2f)
@@ -241,8 +262,6 @@ public class GridObject : MonoBehaviour
         float maxDistance = gridController.cellSize * 2f;
         if (Vector3.Distance(playerHead.position, faceCenter) > maxDistance)
             return false;
-
-        // Controller checks??
 
         // Vertical angle check:
 
