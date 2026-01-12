@@ -9,7 +9,10 @@ public class Door : MonoBehaviour
     private bool isOpen = false;
 
     // Triggers needed to open/close door
-    public List<CellTrigger> linkedTriggers = new List<CellTrigger>(); 
+    public List<CellTrigger> linkedBlueTriggers;
+    public List<CellTrigger> linkedRedTriggers;
+    public List<CellTrigger> linkedPurpleTriggers;
+
 
     // Door collider
     private BoxCollider doorCollider;
@@ -35,18 +38,39 @@ public class Door : MonoBehaviour
 
         // Get door collider
         doorCollider = GetComponent<BoxCollider>();
+
+        // Show indicators based on how many linked triggers
+        
     }
 
     void Update()
     {
         CheckTriggers();
         AnimateDoor();
+        UpdateIndicatorVisibility();
     }
 
     // Check if all linked triggers are active
     public void CheckTriggers()
     {
-        foreach (CellTrigger trigger in linkedTriggers)
+        foreach (CellTrigger trigger in linkedBlueTriggers)
+        {
+            if (!trigger.IsTriggerActive)
+            {
+                CloseDoor();
+                return;
+            }
+        }
+
+        foreach (CellTrigger trigger in linkedRedTriggers)
+        {
+            if (!trigger.IsTriggerActive)
+            {
+                CloseDoor();
+                return;
+            }
+        }
+        foreach (CellTrigger trigger in linkedPurpleTriggers)
         {
             if (!trigger.IsTriggerActive)
             {
@@ -97,5 +121,53 @@ public class Door : MonoBehaviour
             bottomDoorPanel.transform.position = Vector3.Lerp(bottomDoorPanel.transform.position, bottomPanelStartPos, Time.deltaTime * openSpeed);
         }
     }
+
+    void UpdateIndicatorVisibility()
+    {
+        // Blue indicators on left panel
+        EnableIndicators(leftDoorPanel, linkedBlueTriggers);
+
+        // Red indicators on right panel
+        EnableIndicators(rightDoorPanel, linkedRedTriggers);
+
+        // Purple indicators on bottom panel
+        EnableIndicators(bottomDoorPanel, linkedPurpleTriggers);
+    }
+
+    void EnableIndicators(GameObject panel, List<CellTrigger> triggers)
+    {
+        if (panel == null) return;
+
+        // Get all indicators
+        Transform[] indicators = new Transform[panel.transform.childCount]; // Array of indicators
+        for (int i = 0; i < panel.transform.childCount; i++)
+            indicators[i] = panel.transform.GetChild(i); // Indicators children of panels
+
+        // Disable all indicators initially
+        foreach (Transform indicator in indicators)
+            indicator.gameObject.SetActive(false);
+
+        // Enable indicators based on how many triggers are connected to the door
+        int count = Mathf.Min(triggers.Count, indicators.Length); // Number of indicators to enable
+        for (int i = 0; i < count; i++)
+        {
+            indicators[i].gameObject.SetActive(true); // Enable indicator
+
+            // Set emission based on if trigger active or not
+            Renderer indicatorRenderer = indicators[i].GetComponent<Renderer>();
+            if (indicatorRenderer != null)
+            {
+                if (triggers[i].IsTriggerActive)
+                {
+                    indicatorRenderer.material.EnableKeyword("_EMISSION");
+                    indicatorRenderer.material.SetColor("_EmissionColor", Color.white * 0.5f);
+                }
+                else
+                    indicatorRenderer.material.DisableKeyword("_EMISSION");
+            }
+        }
+    }
+
+
 
 }
