@@ -16,6 +16,10 @@ public class GrdObjectInput : MonoBehaviour
     public ActionBasedController xrController;
     public InputActionProperty magnetAction; // Set activate value
 
+    public XRRayInteractor xrRayInteractor;
+    private XRInteractorLineVisual lineVisual;
+
+
     public float activationThreshold = 0.1f; // Threshold for button press
     private bool wasMagnetActivated= false; 
     private bool isMagnetActivated = false; 
@@ -35,7 +39,11 @@ public class GrdObjectInput : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (xrRayInteractor != null)
+            lineVisual = xrRayInteractor.GetComponent<XRInteractorLineVisual>();
 
+        if (lineVisual != null)
+            lineVisual.enabled = false;
     }
 
     // Update is called once per frame
@@ -103,10 +111,13 @@ public class GrdObjectInput : MonoBehaviour
     {
         // To do:
         // Use different highlight for each hand, prioritize most recent hand
-        // Unhighlifht when moving off face
 
         // Cast ray from controller 
         RaycastHit hit;
+
+        if (lineVisual != null)
+            lineVisual.enabled = false;
+
         if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
         {
             // Get GridObject component from hit object
@@ -115,11 +126,15 @@ public class GrdObjectInput : MonoBehaviour
             // Highlight face on hit
             if (gridObject != null )
             {
-                    if (gridObject.canActivateMagnet(playerTransform, hit.normal)) // use player transform
+                Vector3 snappedFaceNormal = GridObject.SnapNormal(hit.normal);
+                if (gridObject.canActivateMagnet(playerTransform, snappedFaceNormal) && gridObject.handType(isLeftHand)) // use player transform
                     {
-                        // Claer previous highlight when hovering over new object
-                        
-                    if (lastHoveredObject != gridObject || (lastHoveredObject.highlightedFace - hit.normal).sqrMagnitude > 0.01f)
+                        if (lineVisual != null)
+                            lineVisual.enabled = true;
+
+                    // Claer previous highlight when hovering over new object
+
+                    if (lastHoveredObject != gridObject || (lastHoveredObject.highlightedFace - snappedFaceNormal).sqrMagnitude > 0.01f)
                         {
                             // Clear last highlight (prevent multiple highlights)
                             if (lastHoveredObject != null)
@@ -131,7 +146,7 @@ public class GrdObjectInput : MonoBehaviour
                         }
 
                         // Highlight new face
-                        gridObject.HighlightFace(hit);
+                        gridObject.HighlightFace(hit, snappedFaceNormal);
                         return; 
                     }
             }

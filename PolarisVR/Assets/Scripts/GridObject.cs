@@ -164,29 +164,32 @@ public class GridObject : MonoBehaviour
     }
 
 
-    public void HighlightFace(RaycastHit hit)
+    public void HighlightFace(RaycastHit hit, Vector3 normal)
     {
+        Vector3Int snappedFaceNormal = SnapNormal(normal);
+        Vector3Int adjacentCell = currentCell + snappedFaceNormal;
+
+        // If face is disabled or out of bounds
+        // NEEDS TO CHECK CUBE TYPE BEFORE DISABLING (E.G. RED/PURPLE CUBE CAN BE PUSHED INTO ADJACENT CELL FROM EDGE)
+        if (gridController.IsCellOccupied(adjacentCell) || !gridController.IsInGrid(adjacentCell) || gridController.IsCellDisabled(adjacentCell) || gridController.IsCellReserved(adjacentCell))
+        {
+            ClearHighlight(); // Do not highlight
+            return;
+        }
+
 
         // Instantiate new highlight
         if (activeHighlight == null)
         {
-            //activeHighlight = Instantiate(faceHighlightPrefab); // use prefab for highlight
-            activeHighlight = Instantiate(faceHighlightPrefab, transform);
+            activeHighlight = Instantiate(faceHighlightPrefab, transform); // parent to grid object
             activeHighlight.transform.localPosition = Vector3.zero;
-            //activeHighlight.transform.localRotation = Quaternion.identity;
             activeHighlight.transform.localScale = Vector3.one;
-            // parent to grid object
+            
         }
 
-        highlightedFace = hit.normal;
+        highlightedFace = snappedFaceNormal;
 
-
-        // Position and direction based on raycast hit
-        ////activeHighlight.transform.position = transform.position + hit.normal * (gridController.cellSize / 2f); // position at face (spawn at centre of face)
-        activeHighlight.transform.rotation = Quaternion.LookRotation(hit.normal); // face direction
-
-        // Apply position offset
-        //activeHighlight.transform.position += hit.normal * 0.01f;
+        activeHighlight.transform.rotation = Quaternion.LookRotation(snappedFaceNormal ); // face direction
     }
 
     public void ClearHighlight()
@@ -226,13 +229,10 @@ public class GridObject : MonoBehaviour
         Vector3Int adjacentCell = currentCell + snappedFaceNormal; // Check adjacent cell in face normal direction
 
         // Check if face is disabled
-        if (gridController.IsCellOccupied(adjacentCell))
+        if (gridController.IsCellOccupied(adjacentCell) || !gridController.IsInGrid(adjacentCell) || gridController.IsCellDisabled(adjacentCell) || gridController.IsCellReserved(adjacentCell))
+        {
             return false;
-
-        // Check if cell is inside grid bounds
-        if (!gridController.IsInGrid(adjacentCell))
-            return false;
-
+        }
         // Check is player is in front of gridobject face
         Vector3 faceCenter = transform.position + (Vector3)snappedFaceNormal * (gridController.cellSize / 2f);// Cube face center
 
@@ -294,6 +294,22 @@ public class GridObject : MonoBehaviour
             {
                 EnableFace(dir);
             }
+        }
+    }
+
+    // Hand types 
+    public bool handType(bool isLeftHand)
+    {
+        switch (cubeType)
+        {
+            case CubeType.Blue:
+                return isLeftHand; // Blue cube for left hand
+            case CubeType.Red:
+                return !isLeftHand; // Red cube for right hand
+            case CubeType.Purple:
+                return true; // Purple cube for both hands
+            default:
+                return false;
         }
     }
 
