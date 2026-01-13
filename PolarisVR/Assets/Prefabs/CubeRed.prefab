@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &5959326115922417175
+--- !u!1 &1104430343814186633
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,11 +8,11 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6878209122971104705}
-  - component: {fileID: 416667115911086344}
-  - component: {fileID: 3785518071469163212}
-  - component: {fileID: 7194050565265736812}
-  - component: {fileID: 7260769904048110132}
+  - component: {fileID: 295101393034107955}
+  - component: {fileID: 3726643694490243990}
+  - component: {fileID: 1464591251999991644}
+  - component: {fileID: 101876866108834836}
+  - component: {fileID: 4723655827866915764}
   m_Layer: 0
   m_Name: CubeRed
   m_TagString: Untagged
@@ -20,36 +20,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6878209122971104705
+--- !u!4 &295101393034107955
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5959326115922417175}
+  m_GameObject: {fileID: 1104430343814186633}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.347, y: 0.522, z: 2.462}
-  m_LocalScale: {x: 0.9, y: 0.9, z: 0.9}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 11, y: 1, z: 7}
+  m_LocalScale: {x: 75, y: 75, z: 75}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &416667115911086344
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+--- !u!33 &3726643694490243990
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5959326115922417175}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &3785518071469163212
+  m_GameObject: {fileID: 1104430343814186633}
+  m_Mesh: {fileID: -5495902117074765545, guid: d9b492a11d2f6b8409414f2151d15dda, type: 3}
+--- !u!23 &1464591251999991644
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5959326115922417175}
+  m_GameObject: {fileID: 1104430343814186633}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -63,7 +63,8 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f9e70789a1fabeb4b9296c9c7112cef7, type: 2}
+  - {fileID: -4652354169740938826, guid: d9b492a11d2f6b8409414f2151d15dda, type: 3}
+  - {fileID: 3374366116269879351, guid: d9b492a11d2f6b8409414f2151d15dda, type: 3}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85,13 +86,29 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7194050565265736812
+--- !u!114 &101876866108834836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1104430343814186633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26d66ae17bdc87640b3e8092884b2de8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentCell: {x: 0, y: 0, z: 0}
+  faceHighlightPrefab: {fileID: 0}
+  highlightedFace: {x: 0, y: 0, z: 0}
+  cubeType: 0
+--- !u!65 &4723655827866915764
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5959326115922417175}
+  m_GameObject: {fileID: 1104430343814186633}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -104,21 +121,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &7260769904048110132
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5959326115922417175}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 26d66ae17bdc87640b3e8092884b2de8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  currentCell: {x: 0, y: 0, z: 0}
-  faceHighlightPrefab: {fileID: 0}
-  highlightedFace: {x: 0, y: 0, z: 0}
-  cubeType: 0
+  m_Size: {x: 0.024715234, y: 0.024715135, z: 0.0247153}
+  m_Center: {x: 0, y: -0.000000054482385, z: 7.7424105e-22}

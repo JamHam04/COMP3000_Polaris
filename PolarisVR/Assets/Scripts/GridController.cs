@@ -19,9 +19,13 @@ public class GridController : MonoBehaviour
 
     public GameObject floorCellPrefab;
 
+    // pillars
+    public GameObject cornerPillarPrefab;
+    public Material pillarMaterial;
+
     void Start()
     {
-
+        CreateCornerPillars();
         for (int x = 0; x < gridX; x++)
         {
             for (int z = 0; z < gridZ; z++)
@@ -71,6 +75,16 @@ public class GridController : MonoBehaviour
         float x = cellCoords.x * cellSize + cellSize / 2;
         float y = cellCoords.y * cellSize + cellSize / 2;
         float z = cellCoords.z * cellSize + cellSize / 2;
+        return new Vector3(x, y, z) + gridCoordinates; // Add grid start offset
+    }
+
+    // Corner to world position
+    public Vector3 CornerToWorld(Vector3Int cornerCoords)
+    {
+        // Calculate world position
+        float x = cornerCoords.x * cellSize;
+        float y = cornerCoords.y * cellSize;
+        float z = cornerCoords.z * cellSize;
         return new Vector3(x, y, z) + gridCoordinates; // Add grid start offset
     }
 
@@ -131,6 +145,13 @@ public class GridController : MonoBehaviour
         }
         return false; // Cell is not disabled
     }
+
+    // If cell is enabled
+    bool IsCellEnabled(Vector3Int cell)
+    {
+        return IsInGrid(cell) && !IsCellDisabled(cell);
+    }
+
 
     // Check grid bounds
     public bool IsInGrid(Vector3Int cellCoords)
@@ -197,6 +218,75 @@ public class GridController : MonoBehaviour
         }
         return null;
     }
+
+    // Create pillars on grid corners
+    void CreateCornerPillars()
+    {
+        // Create list of croners
+        HashSet<Vector3Int> gridCorners = new HashSet<Vector3Int>();
+
+        // Check each cell in grid
+        for (int x = 0; x < gridX; x++)
+        {
+            for (int y = 0; y < gridY; y++)
+            {
+                for (int z = 0; z < gridZ; z++)
+                {
+                    // Skip disabled cells
+                    if (IsCellDisabled(new Vector3Int(x, y, z))) continue;
+
+                    // Check cells around corner, add corner if edge corner
+                    AddCorner(gridCorners, new Vector3Int(x, 0, z));
+                    AddCorner(gridCorners, new Vector3Int(x + 1, 0, z));
+                    AddCorner(gridCorners, new Vector3Int(x, 0, z + 1));
+                    AddCorner(gridCorners, new Vector3Int(x + 1, 0, z + 1));
+                }
+            }
+        }
+
+        // Create pillar at each corner
+        foreach (var corner in gridCorners)
+        {
+
+            // Instantiate pillar
+            GameObject pillar = Instantiate(cornerPillarPrefab, transform);
+            pillar.transform.position = CornerToWorld(corner); // Set position
+
+            // Scale pillar to grid height
+            Vector3 pillarHeight = pillar.transform.localScale;
+            pillarHeight.y = gridY * cellSize;
+            pillar.transform.localScale = pillarHeight;
+
+            // Set pillar material
+            pillar.GetComponent<Renderer>().material = pillarMaterial;
+            
+        }
+    }
+
+    void AddCorner(HashSet<Vector3Int> gridCorners, Vector3Int corner)
+    {
+        // Check the 4 cells around this corner point
+        bool bottomLeft = IsCellEnabled(corner + new Vector3Int(-1, 0, -1));
+        bool bottomRight = IsCellEnabled(corner + new Vector3Int(0, 0, -1));
+        bool topLeft = IsCellEnabled(corner + new Vector3Int(-1, 0, 0));
+        bool topRight = IsCellEnabled(corner);
+
+        // Count enabled cells
+        int enabledCellCount = 0;
+        if (bottomLeft) enabledCellCount++;
+        if (bottomRight) enabledCellCount++;
+        if (topLeft) enabledCellCount++;
+        if (topRight) enabledCellCount++;
+
+        // If 1 or 3 of the surrounding cells are enabled, this is an edge corner (1 cell are end outer corner, 3 cells are inner corner)
+        if (enabledCellCount == 1 || enabledCellCount == 3)
+        {
+            gridCorners.Add(corner); // Add corner to set
+        }
+    }
+
+
+
 
 }
 
