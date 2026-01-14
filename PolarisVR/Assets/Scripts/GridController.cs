@@ -23,9 +23,15 @@ public class GridController : MonoBehaviour
     public GameObject cornerPillarPrefab;
     public Material pillarMaterial;
 
+    // Grid outline
+    public GameObject outlinePrefab;
+    public bool showGrid = true;
+
+
     void Start()
     {
         CreateCornerPillars();
+        CreateTopOutline();
         for (int x = 0; x < gridX; x++)
         {
             for (int z = 0; z < gridZ; z++)
@@ -42,7 +48,7 @@ public class GridController : MonoBehaviour
                 pos.y = gridCoordinates.y + 0.0001f;
                 floorCell.transform.position = pos; // set position
 
-                pos.y = gridCoordinates.y + gridY;
+                pos.y = gridCoordinates.y + gridY * cellSize;
                 roofCell.transform.Rotate(180f, 0f, 0f);
                 roofCell.transform.position = pos; // set position
             }
@@ -91,6 +97,8 @@ public class GridController : MonoBehaviour
     // Draw grid for visualization
     private void OnDrawGizmos()
     {
+        if (!showGrid) return;
+
         Gizmos.color = Color.green; // Grid color
 
         // Draw grid lines
@@ -286,6 +294,63 @@ public class GridController : MonoBehaviour
     }
 
 
+    // Create outline at top of grid
+    void CreateTopOutline()
+    {
+        float outlineY = gridY * cellSize; // Top of grid
+
+        // Check each cell at the top layer
+        for (int x = 0; x < gridX; x++)
+        {
+            for (int y = 0; y < gridY; y++)
+            {
+                for (int z = 0; z < gridZ; z++)
+                {
+                    // Skip disabled cells
+                    if (IsCellDisabled(new Vector3Int(x, y, z))) continue;
+
+                    // Check cells around, if disabled then it is an edege
+                    bool leftEdge = !IsCellEnabled(new Vector3Int(x - 1, gridY - 1, z));
+                    bool rightEdge = !IsCellEnabled(new Vector3Int(x + 1, gridY - 1, z));
+                    bool frontEdge = !IsCellEnabled(new Vector3Int(x, gridY - 1, z - 1));
+                    bool backEdge = !IsCellEnabled(new Vector3Int(x, gridY - 1, z + 1));
+
+                    // Get cell center position
+                    Vector3 cellCenter = CellToWorld(new Vector3Int(x, y, z)); // World pos of cell center
+                    cellCenter.y = outlineY - 0.026f; // Top - half size of outline prefav (adding 0.001f to prevent z-fighting)
+
+                    // Create outline segment for each edge
+                    if (leftEdge) CreateEdge(cellCenter + Vector3.left * cellSize / 2, Vector3.forward);
+                    if (rightEdge) CreateEdge(cellCenter + Vector3.right * cellSize / 2, Vector3.forward);
+                    if (frontEdge) CreateEdge(cellCenter + Vector3.back * cellSize / 2, Vector3.right);
+                    if (backEdge) CreateEdge(cellCenter + Vector3.forward * cellSize / 2, Vector3.right);
+
+                }
+            }
+        }
+    }
+
+    void CreateEdge(Vector3 position, Vector3 direction)
+    {
+        GameObject outlineEdge = Instantiate(outlinePrefab, transform);
+        outlineEdge.transform.position = position;
+
+        Vector3 stretchScale = outlinePrefab.transform.localScale;
+
+        // Set length to size of cell
+        if (direction == Vector3.forward || direction == Vector3.back)
+        {
+            stretchScale.z = cellSize; // stretch along z (front and back)
+        }
+        else // right or left
+        {
+            stretchScale.x = cellSize; // stretch along x (right and left)
+        }
+        outlineEdge.GetComponent<Renderer>().material = pillarMaterial; // placeholder
+        outlineEdge.transform.localScale = stretchScale;
+
+        // Draw edges around bottom as well??
+    }
 
 
 }

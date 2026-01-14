@@ -34,6 +34,7 @@ public class GridObject : MonoBehaviour
 
     private Renderer cubeRenderer;
 
+
     // Cube type
 
     public CubeType cubeType;
@@ -164,19 +165,14 @@ public class GridObject : MonoBehaviour
     }
 
 
-    public void HighlightFace(RaycastHit hit, Vector3 normal)
+    public void HighlightFace(RaycastHit hit, Vector3 normal, bool canActivate)
     {
         Vector3Int snappedFaceNormal = SnapNormal(normal);
-        Vector3Int adjacentCell = currentCell + snappedFaceNormal;
+        Vector3Int pushCell = currentCell - snappedFaceNormal;
+        Vector3Int pullCell = currentCell + snappedFaceNormal;
 
-        // If face is disabled or out of bounds
-        // NEEDS TO CHECK CUBE TYPE BEFORE DISABLING (E.G. RED/PURPLE CUBE CAN BE PUSHED INTO ADJACENT CELL FROM EDGE)
-        if (gridController.IsCellOccupied(adjacentCell) || !gridController.IsInGrid(adjacentCell) || gridController.IsCellDisabled(adjacentCell) || gridController.IsCellReserved(adjacentCell))
-        {
-            ClearHighlight(); // Do not highlight
-            return;
-        }
-
+        bool canPull = gridController.IsInGrid(pullCell) && !gridController.IsCellOccupied(pullCell) && !gridController.IsCellDisabled(pullCell) && !gridController.IsCellReserved(pullCell);
+        bool canPush = gridController.IsInGrid(pushCell) && !gridController.IsCellOccupied(pushCell) && !gridController.IsCellDisabled(pushCell) && !gridController.IsCellReserved(pushCell);
 
         // Instantiate new highlight
         if (activeHighlight == null)
@@ -184,13 +180,61 @@ public class GridObject : MonoBehaviour
             activeHighlight = Instantiate(faceHighlightPrefab, transform); // parent to grid object
             activeHighlight.transform.localPosition = Vector3.zero;
             activeHighlight.transform.localScale = Vector3.one;
-            
+
         }
+
+        // Invaid face if cannot activate
+        bool invalidFace = !canActivate;  
+
+        // Handle highlight for cube types
+        switch (cubeType)
+        {
+            case CubeType.Blue:
+                // Enable face only if there is a cell free to push into
+                // set invalid if cannot pull
+                if (!canPull) 
+                {
+                    invalidFace = true;
+                }
+
+
+                break;
+            case CubeType.Red:
+                // Enable face only if there is a cell free to pull into
+                if (!canPush)
+                {
+                    invalidFace = true;
+                }
+                break;
+            case CubeType.Purple:
+                // Enable face only if there is a cell free to push or pull into
+
+                if (!canPull && !canPush)
+                {
+                    invalidFace = true;
+                }
+                break;
+        }
+
+        Renderer highlightRenderer = activeHighlight.GetComponentInChildren<Renderer>();
+        if (invalidFace)
+        {
+            // Set highlight color to red
+            highlightRenderer.material.color = Color.gray;
+        }
+        else
+        {
+            // Set highlight color to green
+            highlightRenderer.material.color = Color.cyan;
+        }
+
+
 
         highlightedFace = snappedFaceNormal;
 
         activeHighlight.transform.rotation = Quaternion.LookRotation(snappedFaceNormal ); // face direction
     }
+
 
     public void ClearHighlight()
     {
@@ -223,16 +267,55 @@ public class GridObject : MonoBehaviour
             return new Vector3Int(0, 0, normal.z > 0 ? 1 : -1);
     }
 
-    public bool canActivateMagnet(Transform playerHead, Vector3 faceNormal)
+    public bool canActivateMagnet(Transform playerHead, Vector3 faceNormal, bool isLeftHand)
     {
         Vector3Int snappedFaceNormal = SnapNormal(faceNormal); // Use snapped normal for face direction
-        Vector3Int adjacentCell = currentCell + snappedFaceNormal; // Check adjacent cell in face normal direction
 
-        // Check if face is disabled
-        if (gridController.IsCellOccupied(adjacentCell) || !gridController.IsInGrid(adjacentCell) || gridController.IsCellDisabled(adjacentCell) || gridController.IsCellReserved(adjacentCell))
+        // Check adjacent cell in face normal direction
+        Vector3Int pushCell = currentCell - snappedFaceNormal;
+        Vector3Int pullCell = currentCell + snappedFaceNormal;
+
+        bool canPull = gridController.IsInGrid(pullCell) && !gridController.IsCellOccupied(pullCell) && !gridController.IsCellDisabled(pullCell) && !gridController.IsCellReserved(pullCell);
+        bool canPush = gridController.IsInGrid(pushCell) && !gridController.IsCellOccupied(pushCell) && !gridController.IsCellDisabled(pushCell) && !gridController.IsCellReserved(pushCell);
+
+        // Check face for each cube type
+        switch (cubeType)
         {
-            return false;
+            case CubeType.Blue:
+                // Can only push if adjacent cell is free
+                if (!canPull)
+                {
+                    return false;
+                }
+
+                break;
+            case CubeType.Red:
+                // Can only pull if adjacent cell is occupied
+                if (!canPush)
+                {
+                    return false;
+                }
+                break;
+            case CubeType.Purple:
+                if (isLeftHand)
+                {
+                    // Left hand can only pull if adjacent cell is free
+                    if (!canPull)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Right hand can only push if adjacent cell is free
+                    if (!canPush)
+                    {
+                        return false;
+                    }
+                }
+                break;
         }
+
         // Check is player is in front of gridobject face
         Vector3 faceCenter = transform.position + (Vector3)snappedFaceNormal * (gridController.cellSize / 2f);// Cube face center
 

@@ -92,7 +92,7 @@ public class GrdObjectInput : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
             {
-                if (lastHoveredObject != null && lastHoveredObject.canActivateMagnet(playerTransform, hit.normal))
+                if (lastHoveredObject != null && lastHoveredObject.canActivateMagnet(playerTransform, hit.normal, isLeftHand))
                 {
                     Vector3Int dir = getActivationDirection(hit.normal);
                     if (isRightHand) dir = -dir; // Pull for left hand
@@ -109,10 +109,6 @@ public class GrdObjectInput : MonoBehaviour
 
     void updateHighlight()
     {
-        // To do:
-        // Use different highlight for each hand, prioritize most recent hand
-
-        // Cast ray from controller 
         RaycastHit hit;
 
         if (lineVisual != null)
@@ -120,35 +116,30 @@ public class GrdObjectInput : MonoBehaviour
 
         if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
         {
-            // Get GridObject component from hit object
             gridObject = hit.collider.gameObject.GetComponent<GridObject>();
 
-            // Highlight face on hit
-            if (gridObject != null )
+            if (gridObject != null && gridObject.handType(isLeftHand))
             {
                 Vector3 snappedFaceNormal = GridObject.SnapNormal(hit.normal);
-                if (gridObject.canActivateMagnet(playerTransform, snappedFaceNormal) && gridObject.handType(isLeftHand)) // use player transform
-                    {
-                        if (lineVisual != null)
-                            lineVisual.enabled = true;
 
-                    // Claer previous highlight when hovering over new object
+                
+                bool canActivate = gridObject.canActivateMagnet(playerTransform, snappedFaceNormal, isLeftHand);
 
-                    if (lastHoveredObject != gridObject || (lastHoveredObject.highlightedFace - snappedFaceNormal).sqrMagnitude > 0.01f)
-                        {
-                            // Clear last highlight (prevent multiple highlights)
-                            if (lastHoveredObject != null)
-                            {
-                                lastHoveredObject.ClearHighlight();
-                            }
+                if (lineVisual != null)
+                    lineVisual.enabled = true;
 
-                            lastHoveredObject = gridObject; // Update prevous hovered object
-                        }
+                // Clear previous highlight if hovering a new face
+                if (lastHoveredObject != gridObject || (lastHoveredObject.highlightedFace - snappedFaceNormal).sqrMagnitude > 0.01f)
+                {
+                    if (lastHoveredObject != null)
+                        lastHoveredObject.ClearHighlight();
 
-                        // Highlight new face
-                        gridObject.HighlightFace(hit, snappedFaceNormal);
-                        return; 
-                    }
+                    lastHoveredObject = gridObject; // Update prevous hovered object
+                }
+
+                // Highlight new face
+                gridObject.HighlightFace(hit, snappedFaceNormal, canActivate);
+                return;
             }
         }
 
@@ -158,8 +149,6 @@ public class GrdObjectInput : MonoBehaviour
             lastHoveredObject.ClearHighlight();
             lastHoveredObject = null;
         }
-
-
     }
 
     // Get direction from controller
