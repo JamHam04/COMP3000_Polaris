@@ -27,6 +27,9 @@ public class GridController : MonoBehaviour
     public GameObject outlinePrefab;
     public bool showGrid = true;
 
+    public Material hologramMaterial;
+
+
 
     void Start()
     {
@@ -42,18 +45,22 @@ public class GridController : MonoBehaviour
 
                 // Spawn floor cell
                 GameObject floorCell = Instantiate(floorCellPrefab, transform);
-                GameObject roofCell = Instantiate(floorCellPrefab, transform);
+                //GameObject roofCell = Instantiate(floorCellPrefab, transform);
 
                 Vector3 pos = CellToWorld(cell);
                 pos.y = gridCoordinates.y + 0.0001f;
                 floorCell.transform.position = pos; // set position
 
-                pos.y = gridCoordinates.y + gridY * cellSize;
-                roofCell.transform.Rotate(180f, 0f, 0f);
-                roofCell.transform.position = pos; // set position
+                //pos.y = gridCoordinates.y + gridY * cellSize;
+                //roofCell.transform.Rotate(180f, 0f, 0f);
+                //roofCell.transform.position = pos; // set position
             }
         }
+        CreateGridWalls();
+
+
     }
+
 
     // Update is called once per frame
     void Update()
@@ -244,10 +251,10 @@ public class GridController : MonoBehaviour
                     if (IsCellDisabled(new Vector3Int(x, y, z))) continue;
 
                     // Check cells around corner, add corner if edge corner
-                    AddCorner(gridCorners, new Vector3Int(x, 0, z));
-                    AddCorner(gridCorners, new Vector3Int(x + 1, 0, z));
-                    AddCorner(gridCorners, new Vector3Int(x, 0, z + 1));
-                    AddCorner(gridCorners, new Vector3Int(x + 1, 0, z + 1));
+                    AddCorner(gridCorners, new Vector3Int(x, y, z));
+                    AddCorner(gridCorners, new Vector3Int(x + 1, y, z));
+                    AddCorner(gridCorners, new Vector3Int(x, y, z + 1));
+                    AddCorner(gridCorners, new Vector3Int(x + 1, y, z + 1));
                 }
             }
         }
@@ -255,15 +262,33 @@ public class GridController : MonoBehaviour
         // Create pillar at each corner
         foreach (var corner in gridCorners)
         {
+            // Chgeck top and bottom y levels for pillar height
+            int topYLevel = Mathf.Max(
+            GetTopYLevel(corner),
+            GetTopYLevel(corner + new Vector3Int(-1, 0, 0)),
+            GetTopYLevel(corner + new Vector3Int(0, 0, -1)),
+            GetTopYLevel(corner + new Vector3Int(-1, 0, -1))
+            );
+            int bottomYLevel = Mathf.Min(
+            GetBottomYLevel(corner),
+            GetBottomYLevel(corner + new Vector3Int(-1, 0, 0)),
+            GetBottomYLevel(corner + new Vector3Int(0, 0, -1)),
+            GetBottomYLevel(corner + new Vector3Int(-1, 0, -1))
+            );
+
+
 
             // Instantiate pillar
             GameObject pillar = Instantiate(cornerPillarPrefab, transform);
             pillar.transform.position = CornerToWorld(corner); // Set position
 
+
+
             // Scale pillar to grid height
             Vector3 pillarHeight = pillar.transform.localScale;
-            pillarHeight.y = gridY * cellSize;
+            pillarHeight.y = (bottomYLevel - topYLevel + 1) * cellSize;
             pillar.transform.localScale = pillarHeight;
+
 
             // Set pillar material
             pillar.GetComponent<Renderer>().material = pillarMaterial;
@@ -297,27 +322,30 @@ public class GridController : MonoBehaviour
     // Create outline at top of grid
     void CreateTopOutline()
     {
-        float outlineY = gridY * cellSize; // Top of grid
+        float outlineY = gridCoordinates.y + gridY * cellSize; // Top of grid
 
         // Check each cell at the top layer
         for (int x = 0; x < gridX; x++)
         {
-            for (int y = 0; y < gridY; y++)
+            for (int y = 0; y < gridY; y++) 
             {
                 for (int z = 0; z < gridZ; z++)
                 {
+
                     // Skip disabled cells
                     if (IsCellDisabled(new Vector3Int(x, y, z))) continue;
 
+                    if (IsCellEnabled(new Vector3Int(x, y + 1, z))) continue;
+
                     // Check cells around, if disabled then it is an edege
-                    bool leftEdge = !IsCellEnabled(new Vector3Int(x - 1, gridY - 1, z));
-                    bool rightEdge = !IsCellEnabled(new Vector3Int(x + 1, gridY - 1, z));
-                    bool frontEdge = !IsCellEnabled(new Vector3Int(x, gridY - 1, z - 1));
-                    bool backEdge = !IsCellEnabled(new Vector3Int(x, gridY - 1, z + 1));
+                    bool leftEdge = !IsCellEnabled(new Vector3Int(x - 1, y, z)) || GetTopYLevel(new Vector3Int(x - 1, y, z)) != y;
+                    bool rightEdge = !IsCellEnabled(new Vector3Int(x + 1, y, z)) || GetTopYLevel(new Vector3Int(x + 1, y, z)) != y;
+                    bool frontEdge = !IsCellEnabled(new Vector3Int(x, y, z - 1)) || GetTopYLevel(new Vector3Int(x, y, z - 1)) != y;
+                    bool backEdge = !IsCellEnabled(new Vector3Int(x, y, z + 1)) || GetTopYLevel(new Vector3Int(x, y, z + 1)) != y;
 
                     // Get cell center position
                     Vector3 cellCenter = CellToWorld(new Vector3Int(x, y, z)); // World pos of cell center
-                    cellCenter.y = outlineY - 0.026f; // Top - half size of outline prefav (adding 0.001f to prevent z-fighting)
+                    cellCenter.y = (gridCoordinates.y + (y + 1) * cellSize) - 0.026f; // Top - half size of outline prefav (adding 0.001f to prevent z-fighting)
 
                     // Create outline segment for each edge
                     if (leftEdge) CreateEdge(cellCenter + Vector3.left * cellSize / 2, Vector3.forward);
@@ -329,6 +357,31 @@ public class GridController : MonoBehaviour
             }
         }
     }
+
+    int GetTopYLevel(Vector3Int cellCoords) 
+    {
+        for (int y = gridY - 1; y >= 0; y--)
+        {
+            if (IsCellEnabled(new Vector3Int(cellCoords.x, y, cellCoords.z)))
+            {
+                return y;
+            }
+        }
+        return -1; // No enabled cells
+    }
+
+    int GetBottomYLevel(Vector3Int cellCoords)
+    {
+        for (int y = 0; y < gridY; y++)
+        {
+            if (IsCellEnabled(new Vector3Int(cellCoords.x, y, cellCoords.z)))
+            {
+                return y;
+            }
+        }
+        return gridY; // No enabled cells
+    }
+
 
     void CreateEdge(Vector3 position, Vector3 direction)
     {
@@ -351,6 +404,87 @@ public class GridController : MonoBehaviour
 
         // Draw edges around bottom as well??
     }
+
+    // Add border around grid
+    void CreateGridWalls()
+    {
+        GameObject hologramParent = new GameObject("GridWalls");
+        hologramParent.transform.parent = transform;
+
+        for (int x = 0; x < gridX; x++)
+            for (int y = 0; y < gridY; y++)
+                for (int z = 0; z < gridZ; z++)
+                {
+                    Vector3Int cell = new Vector3Int(x, y, z);
+                    if (!IsCellEnabled(cell)) continue;
+
+                    int bottomYLevel = GetBottomYLevel(cell);
+                    int topYLevel = GetTopYLevel(cell);
+
+                    // Check cells around for walls
+                    if (!IsCellEnabled(cell + new Vector3Int(-1, 0, 0))) AddGridWall(cell, Vector3.left, bottomYLevel, topYLevel, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(1, 0, 0))) AddGridWall(cell, Vector3.right, bottomYLevel, topYLevel, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(0, 0, -1))) AddGridWall(cell, Vector3.back, bottomYLevel, topYLevel, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(0, 0, 1))) AddGridWall(cell, Vector3.forward, bottomYLevel, topYLevel, hologramParent.transform);
+
+                    // Roof cells 
+                    if (!IsCellEnabled(cell + new Vector3Int(0, 1, 0))) AddGridRoof(cell, hologramParent.transform);
+                }
+    }
+
+    // Create wall quads
+    void AddGridWall(Vector3Int cell, Vector3 direction, int bottomY, int topY, Transform parent)
+    {
+        // Create and child quad
+        GameObject borderQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        borderQuad.transform.parent = parent;
+
+        
+        float height = (topY - bottomY + 1) * cellSize;
+        borderQuad.transform.localScale = new Vector3(cellSize, height, 1);
+
+        // Move to edeg
+        Vector3 quadPosition = CellToWorld(cell); // Center of cell
+        quadPosition.y = gridCoordinates.y + (bottomY * cellSize) + height / 2; // Set y to middle of wall height
+        quadPosition += direction * (cellSize / 2); // Move to grid edge (depending on direction)
+        borderQuad.transform.position = quadPosition; // Set position
+
+        // Rotate based on direction
+        if (direction == Vector3.left)
+            borderQuad.transform.rotation = Quaternion.Euler(0, 90, 0);
+        else if (direction == Vector3.right)
+            borderQuad.transform.rotation = Quaternion.Euler(0, -90, 0);
+        else if (direction == Vector3.back)
+            borderQuad.transform.rotation = Quaternion.Euler(0, 0, 0);
+        else if (direction == Vector3.forward)
+            borderQuad.transform.rotation = Quaternion.Euler(0, 180, 0);
+
+        // Set material
+        Material mat = new Material(hologramMaterial);
+        mat.mainTextureScale = new Vector2(1, height / cellSize);
+        borderQuad.GetComponent<Renderer>().material = mat;
+
+    }
+
+    // Create roof quads
+    void AddGridRoof(Vector3Int cell, Transform parent)
+    {
+        // Create and child quad
+        GameObject borderQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        borderQuad.transform.parent = parent;
+
+
+        borderQuad.transform.localScale = Vector3.one * cellSize;
+
+        Vector3 quadPosition = CellToWorld(cell); // Center of cell
+        quadPosition.y += cellSize / 2; // Move to top of cell
+        borderQuad.transform.position = quadPosition; // Set position 
+        borderQuad.transform.rotation = Quaternion.Euler(90, 0, 0); // Rotate uopwards
+
+        // Set material
+        borderQuad.GetComponent<Renderer>().material = hologramMaterial;
+    }
+
 
 
 }

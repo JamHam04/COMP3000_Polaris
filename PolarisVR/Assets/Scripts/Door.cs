@@ -32,9 +32,9 @@ public class Door : MonoBehaviour
     void Start()
     {
         // Store initial positions
-        leftPanelStartPos = leftDoorPanel.transform.position;
-        rightPanelStartPos = rightDoorPanel.transform.position;
-        bottomPanelStartPos = bottomDoorPanel.transform.position;
+        leftPanelStartPos = leftDoorPanel.transform.localPosition;
+        rightPanelStartPos = rightDoorPanel.transform.localPosition;
+        bottomPanelStartPos = bottomDoorPanel.transform.localPosition;
 
         // Get door collider
         doorCollider = GetComponent<BoxCollider>();
@@ -110,15 +110,15 @@ public class Door : MonoBehaviour
         // Smoothly move panels
         if (isOpen)
         {
-            leftDoorPanel.transform.position = Vector3.Lerp(leftDoorPanel.transform.position, leftTargetPos, Time.deltaTime * openSpeed);
-            rightDoorPanel.transform.position = Vector3.Lerp(rightDoorPanel.transform.position, rightTargetPos, Time.deltaTime * openSpeed);
-            bottomDoorPanel.transform.position = Vector3.Lerp(bottomDoorPanel.transform.position, bottomTargetPos, Time.deltaTime * openSpeed);
+            leftDoorPanel.transform.localPosition = Vector3.Lerp(leftDoorPanel.transform.localPosition, leftTargetPos, Time.deltaTime * openSpeed);
+            rightDoorPanel.transform.localPosition = Vector3.Lerp(rightDoorPanel.transform.localPosition, rightTargetPos, Time.deltaTime * openSpeed);
+            bottomDoorPanel.transform.localPosition = Vector3.Lerp(bottomDoorPanel.transform.localPosition, bottomTargetPos, Time.deltaTime * openSpeed);
         }
         else
         {
-            leftDoorPanel.transform.position = Vector3.Lerp(leftDoorPanel.transform.position, leftPanelStartPos, Time.deltaTime * openSpeed);
-            rightDoorPanel.transform.position = Vector3.Lerp(rightDoorPanel.transform.position, rightPanelStartPos, Time.deltaTime * openSpeed);
-            bottomDoorPanel.transform.position = Vector3.Lerp(bottomDoorPanel.transform.position, bottomPanelStartPos, Time.deltaTime * openSpeed);
+            leftDoorPanel.transform.localPosition = Vector3.Lerp(leftDoorPanel.transform.localPosition, leftPanelStartPos, Time.deltaTime * openSpeed);
+            rightDoorPanel.transform.localPosition = Vector3.Lerp(rightDoorPanel.transform.localPosition, rightPanelStartPos, Time.deltaTime * openSpeed);
+            bottomDoorPanel.transform.localPosition = Vector3.Lerp(bottomDoorPanel.transform.localPosition, bottomPanelStartPos, Time.deltaTime * openSpeed);
         }
     }
 

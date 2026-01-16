@@ -191,7 +191,6 @@ public class GridObject : MonoBehaviour
         {
             case CubeType.Blue:
                 // Enable face only if there is a cell free to push into
-                // set invalid if cannot pull
                 if (!canPull) 
                 {
                     invalidFace = true;
