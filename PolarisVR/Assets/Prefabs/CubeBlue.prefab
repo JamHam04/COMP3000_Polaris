@@ -99,7 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentCell: {x: 0, y: 0, z: 0}
-  faceHighlightPrefab: {fileID: 0}
+  faceHighlightPrefab: {fileID: 4490205848833507890, guid: 6eb0c161f8e3732459b23d707c6ed4e8, type: 3}
   highlightedFace: {x: 0, y: 0, z: 0}
   cubeType: 1
 --- !u!65 &4923581135916129110

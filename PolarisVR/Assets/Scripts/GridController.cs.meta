@@ -3,7 +3,12 @@ guid: 5e3eab3ac51e4fb429c1d579050b4899
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - floorCellPrefab: {instanceID: 0}
+  - cornerPillarPrefab: {instanceID: 0}
+  - pillarMaterial: {instanceID: 0}
+  - outlinePrefab: {instanceID: 0}
+  - borderTile: {fileID: 1161586786846691306, guid: 8ed10c7cf55e3c646981e1ea88977b28, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

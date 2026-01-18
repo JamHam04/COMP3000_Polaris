@@ -33,7 +33,8 @@ public class GridObject : MonoBehaviour
     private bool isMoving = false;
 
     private Renderer cubeRenderer;
-
+    private Vector3 lastPosition;
+    CharacterController playerController;
 
     // Cube type
 
@@ -51,11 +52,14 @@ public class GridObject : MonoBehaviour
         // Get player transform
         playerTransform = Camera.main.transform;
 
+        // Player character controller
+        playerController = playerTransform.GetComponentInParent<CharacterController>();
+
         // Initialize current cell
         currentCell = gridController.worldToCell(transform.position);
         MoveToCell(currentCell);
 
-
+        lastPosition = transform.position;
 
     }
 
@@ -87,8 +91,30 @@ public class GridObject : MonoBehaviour
         Collider cubeCollider = GetComponent<Collider>();
         //cubeCollider.enabled = false;
 
+        lastPosition = transform.position;
+
         while (elapsedTime < cubeMoveSpeed)
         {
+            // Get new position
+            Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, elapsedTime / cubeMoveSpeed);
+            Vector3 movementDelta = newPosition - lastPosition;
+
+            // Move cube
+            transform.position = newPosition;
+
+            // Check if player is on top of cube
+            float playerY = playerTransform.position.y;
+            float cubeY = transform.position.y;
+
+            if ((playerY - cubeY) > 0)
+            {
+                // Player is above cube, move player up with cube
+                playerController.Move(movementDelta);
+                
+            }
+
+
+
             // Check distance to player
             float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
@@ -99,8 +125,7 @@ public class GridObject : MonoBehaviour
                 yield return StartCoroutine(BounceBack(startPosition, startCell, newCell));
                 yield break;
             }
-
-            transform.position = Vector3.Lerp(startPosition, targetPosition, elapsedTime / cubeMoveSpeed);
+            lastPosition = transform.position;
             elapsedTime += Time.deltaTime;
             yield return null;
         }
@@ -346,6 +371,8 @@ public class GridObject : MonoBehaviour
             return false;
 
         // Vertical angle check:
+   
+
 
         return true;
 

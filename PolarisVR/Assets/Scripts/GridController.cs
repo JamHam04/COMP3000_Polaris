@@ -26,8 +26,12 @@ public class GridController : MonoBehaviour
     // Grid outline
     public GameObject outlinePrefab;
     public bool showGrid = true;
+    public GameObject borderTile;
 
-    public Material hologramMaterial;
+
+
+    private const float zOffset = 0.001f; // Offset to prevent z-clipping
+
 
 
 
@@ -418,14 +422,11 @@ public class GridController : MonoBehaviour
                     Vector3Int cell = new Vector3Int(x, y, z);
                     if (!IsCellEnabled(cell)) continue;
 
-                    int bottomYLevel = GetBottomYLevel(cell);
-                    int topYLevel = GetTopYLevel(cell);
-
                     // Check cells around for walls
-                    if (!IsCellEnabled(cell + new Vector3Int(-1, 0, 0))) AddGridWall(cell, Vector3.left, bottomYLevel, topYLevel, hologramParent.transform);
-                    if (!IsCellEnabled(cell + new Vector3Int(1, 0, 0))) AddGridWall(cell, Vector3.right, bottomYLevel, topYLevel, hologramParent.transform);
-                    if (!IsCellEnabled(cell + new Vector3Int(0, 0, -1))) AddGridWall(cell, Vector3.back, bottomYLevel, topYLevel, hologramParent.transform);
-                    if (!IsCellEnabled(cell + new Vector3Int(0, 0, 1))) AddGridWall(cell, Vector3.forward, bottomYLevel, topYLevel, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(-1, 0, 0))) AddGridWall(cell, Vector3.left, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(1, 0, 0))) AddGridWall(cell, Vector3.right, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(0, 0, -1))) AddGridWall(cell, Vector3.back, hologramParent.transform);
+                    if (!IsCellEnabled(cell + new Vector3Int(0, 0, 1))) AddGridWall(cell, Vector3.forward, hologramParent.transform);
 
                     // Roof cells 
                     if (!IsCellEnabled(cell + new Vector3Int(0, 1, 0))) AddGridRoof(cell, hologramParent.transform);
@@ -433,20 +434,19 @@ public class GridController : MonoBehaviour
     }
 
     // Create wall quads
-    void AddGridWall(Vector3Int cell, Vector3 direction, int bottomY, int topY, Transform parent)
+    void AddGridWall(Vector3Int cell, Vector3 direction, Transform parent)
     {
         // Create and child quad
-        GameObject borderQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        borderQuad.transform.parent = parent;
+        GameObject borderQuad = Instantiate(borderTile, parent);
 
-        
-        float height = (topY - bottomY + 1) * cellSize;
+
+        float height = cellSize;
         borderQuad.transform.localScale = new Vector3(cellSize, height, 1);
 
         // Move to edeg
         Vector3 quadPosition = CellToWorld(cell); // Center of cell
-        quadPosition.y = gridCoordinates.y + (bottomY * cellSize) + height / 2; // Set y to middle of wall height
-        quadPosition += direction * (cellSize / 2); // Move to grid edge (depending on direction)
+        quadPosition.y = gridCoordinates.y + (cell.y * cellSize) + height / 2; // Set y to middle of wall height
+        quadPosition += direction * (cellSize / 2 - zOffset); // Move to grid edge (depending on direction)
         borderQuad.transform.position = quadPosition; // Set position
 
         // Rotate based on direction
@@ -459,30 +459,22 @@ public class GridController : MonoBehaviour
         else if (direction == Vector3.forward)
             borderQuad.transform.rotation = Quaternion.Euler(0, 180, 0);
 
-        // Set material
-        Material mat = new Material(hologramMaterial);
-        mat.mainTextureScale = new Vector2(1, height / cellSize);
-        borderQuad.GetComponent<Renderer>().material = mat;
-
-    }
+    } 
 
     // Create roof quads
     void AddGridRoof(Vector3Int cell, Transform parent)
     {
         // Create and child quad
-        GameObject borderQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        borderQuad.transform.parent = parent;
-
+        GameObject borderQuad = Instantiate(borderTile, parent);
 
         borderQuad.transform.localScale = Vector3.one * cellSize;
 
         Vector3 quadPosition = CellToWorld(cell); // Center of cell
         quadPosition.y += cellSize / 2; // Move to top of cell
+        quadPosition.y += zOffset; // Prevent z-fighting
         borderQuad.transform.position = quadPosition; // Set position 
         borderQuad.transform.rotation = Quaternion.Euler(90, 0, 0); // Rotate uopwards
 
-        // Set material
-        borderQuad.GetComponent<Renderer>().material = hologramMaterial;
     }
 
 
