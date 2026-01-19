@@ -68,6 +68,7 @@ public class GridObject : MonoBehaviour
     {
 
 
+
     }
 
     public void DisableFace(Vector3Int faceNormal)
@@ -95,24 +96,32 @@ public class GridObject : MonoBehaviour
 
         while (elapsedTime < cubeMoveSpeed)
         {
+           
+
             // Get new position
             Vector3 newPosition = Vector3.Lerp(startPosition, targetPosition, elapsedTime / cubeMoveSpeed);
-            Vector3 movementDelta = newPosition - lastPosition;
 
             // Move cube
             transform.position = newPosition;
 
-            // Check if player is on top of cube
-            float playerY = playerTransform.position.y;
-            float cubeY = transform.position.y;
+            Vector3 movementDelta = newPosition - lastPosition;
+            lastPosition = newPosition;
 
-            if ((playerY - cubeY) > 0)
+
+            // Check if player is on top of cube 
+            float raycastDistance = 0.8f;
+
+
+            Vector3 playerFeetPosition = playerController.transform.position + playerController.center - Vector3.up * (playerController.height / 2f);
+
+            if (Physics.Raycast(playerFeetPosition, Vector3.down, out RaycastHit hitInfo, raycastDistance))
             {
-                // Player is above cube, move player up with cube
-                playerController.Move(movementDelta);
-                
+                if (hitInfo.collider == cubeCollider)
+                {
+                    // Move player along with cube
+                    playerController.Move(movementDelta);
+                }
             }
-
 
 
             // Check distance to player
@@ -125,7 +134,7 @@ public class GridObject : MonoBehaviour
                 yield return StartCoroutine(BounceBack(startPosition, startCell, newCell));
                 yield break;
             }
-            lastPosition = transform.position;
+
             elapsedTime += Time.deltaTime;
             yield return null;
         }

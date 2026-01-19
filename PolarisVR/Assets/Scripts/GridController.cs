@@ -9,7 +9,7 @@ public class GridController : MonoBehaviour
     public int gridX = 10; // Width of the grid in cells
     public int gridY = 10; // Height of the grid in cells
     public int gridZ = 10;  // Depth of the grid in cells
-    public float cellSize = 1.0f; // Size of each cell in the grid
+    public float cellSize = 2.0f; // Size of each cell in the grid
     public Vector3 gridCoordinates = Vector3.zero; // Where grid starts in world
 
     // Grid cell occupancy
@@ -39,27 +39,31 @@ public class GridController : MonoBehaviour
     {
         CreateCornerPillars();
         CreateTopOutline();
-        for (int x = 0; x < gridX; x++)
-        {
-            for (int z = 0; z < gridZ; z++)
-            {
-                Vector3Int cell = new Vector3Int(x, 0, z); 
+        CreateBottomOutline();
+        //for (int x = 0; x < gridX; x++)
+        //{
+        //    for (int z = 0; z < gridZ; z++)
+        //    {
+        //        Vector3Int cell = new Vector3Int(x, 0, z);
 
-                if (IsCellDisabled(cell)) continue; // skip disabled cells
+        //        if (IsCellDisabled(cell)) continue; // skip disabled cells
 
-                // Spawn floor cell
-                GameObject floorCell = Instantiate(floorCellPrefab, transform);
-                //GameObject roofCell = Instantiate(floorCellPrefab, transform);
+   
+        //        // Spawn floor cell
+        //        GameObject floorCell = Instantiate(floorCellPrefab, transform);
+        //        //GameObject roofCell = Instantiate(floorCellPrefab, transform);
 
-                Vector3 pos = CellToWorld(cell);
-                pos.y = gridCoordinates.y + 0.0001f;
-                floorCell.transform.position = pos; // set position
+        //        Vector3 pos = CellToWorld(cell);
+        //        pos.y = gridCoordinates.y + 0.0001f;
+        //        floorCell.transform.position = pos; // set position
 
-                //pos.y = gridCoordinates.y + gridY * cellSize;
-                //roofCell.transform.Rotate(180f, 0f, 0f);
-                //roofCell.transform.position = pos; // set position
-            }
-        }
+                
+
+        //        //pos.y = gridCoordinates.y + gridY * cellSize;
+        //        //roofCell.transform.Rotate(180f, 0f, 0f);
+        //        //roofCell.transform.position = pos; // set position
+        //    }
+        //}
         CreateGridWalls();
 
 
@@ -229,6 +233,9 @@ public class GridController : MonoBehaviour
         return playerCell == cellCoords;
     }
 
+    // Check if player is in adjacent cell
+
+
     public GridObject GetCubeInCell(Vector3Int cellCoords)
     {
         if (occupiedCells.ContainsKey(cellCoords))
@@ -280,19 +287,20 @@ public class GridController : MonoBehaviour
             GetBottomYLevel(corner + new Vector3Int(-1, 0, -1))
             );
 
-
+            float pillarHeight = (topYLevel - bottomYLevel + 1) * cellSize; // Calculate pillar height to grid size
 
             // Instantiate pillar
             GameObject pillar = Instantiate(cornerPillarPrefab, transform);
-            pillar.transform.position = CornerToWorld(corner); // Set position
 
-
+            // Position pillar at corner
+            Vector3 pillarPos = CornerToWorld(corner);
+            pillarPos.y = gridCoordinates.y + (bottomYLevel * cellSize) + (pillarHeight / 2); // Set to bottom y level (+ half height)
+            pillar.transform.position = pillarPos;
 
             // Scale pillar to grid height
-            Vector3 pillarHeight = pillar.transform.localScale;
-            pillarHeight.y = (bottomYLevel - topYLevel + 1) * cellSize;
-            pillar.transform.localScale = pillarHeight;
-
+            Vector3 pillarScale = pillar.transform.localScale;
+            pillarScale.y = (topYLevel - bottomYLevel + 1);
+            pillar.transform.localScale = pillarScale; 
 
             // Set pillar material
             pillar.GetComponent<Renderer>().material = pillarMaterial;
@@ -357,6 +365,42 @@ public class GridController : MonoBehaviour
                     if (frontEdge) CreateEdge(cellCenter + Vector3.back * cellSize / 2, Vector3.right);
                     if (backEdge) CreateEdge(cellCenter + Vector3.forward * cellSize / 2, Vector3.right);
 
+                }
+            }
+        }
+    }
+
+    void CreateBottomOutline()
+    {
+        for (int x = 0; x < gridX; x++)
+        {
+            for (int z = 0; z < gridZ; z++)
+            {
+                for (int y = 0; y < gridY; y++)
+                {
+                    Vector3Int cell = new Vector3Int(x, y, z);
+
+                    // Skip disabled cells
+                    if (!IsCellEnabled(cell)) continue; 
+
+                    
+                    if (y > 0 && IsCellEnabled(new Vector3Int(x, y - 1, z))) continue;
+
+                    // Check cells around, if disabled then it is an edege
+                    bool leftEdge = !IsCellEnabled(new Vector3Int(x - 1, y, z)) || GetBottomYLevel(new Vector3Int(x - 1, y, z)) != y;
+                    bool rightEdge = !IsCellEnabled(new Vector3Int(x + 1, y, z)) || GetBottomYLevel(new Vector3Int(x + 1, y, z)) != y;
+                    bool frontEdge = !IsCellEnabled(new Vector3Int(x, y, z - 1)) || GetBottomYLevel(new Vector3Int(x, y, z - 1)) != y;
+                    bool backEdge = !IsCellEnabled(new Vector3Int(x, y, z + 1)) || GetBottomYLevel(new Vector3Int(x, y, z + 1)) != y;
+
+                    // Get cell center position
+                    Vector3 cellCenter = CellToWorld(cell); // World pos of cell center
+                    cellCenter.y = gridCoordinates.y + y * cellSize + 0.026f;
+
+                    // Create outline segment for each edge
+                    if (leftEdge) CreateEdge(cellCenter + Vector3.left * cellSize / 2, Vector3.forward);
+                    if (rightEdge) CreateEdge(cellCenter + Vector3.right * cellSize / 2, Vector3.forward);
+                    if (frontEdge) CreateEdge(cellCenter + Vector3.back * cellSize / 2, Vector3.right);
+                    if (backEdge) CreateEdge(cellCenter + Vector3.forward * cellSize / 2, Vector3.right);
                 }
             }
         }
@@ -430,6 +474,9 @@ public class GridController : MonoBehaviour
 
                     // Roof cells 
                     if (!IsCellEnabled(cell + new Vector3Int(0, 1, 0))) AddGridRoof(cell, hologramParent.transform);
+
+                    // Floor cells
+                    if (!IsCellEnabled(cell + new Vector3Int(0, -1, 0))) AddGridFloor(cell, hologramParent.transform);
                 }
     }
 
@@ -470,11 +517,27 @@ public class GridController : MonoBehaviour
         borderQuad.transform.localScale = Vector3.one * cellSize;
 
         Vector3 quadPosition = CellToWorld(cell); // Center of cell
+
         quadPosition.y += cellSize / 2; // Move to top of cell
         quadPosition.y += zOffset; // Prevent z-fighting
         borderQuad.transform.position = quadPosition; // Set position 
         borderQuad.transform.rotation = Quaternion.Euler(90, 0, 0); // Rotate uopwards
 
+    }
+
+    void AddGridFloor(Vector3Int cell, Transform parent)
+    {
+        // Create and child quad
+        GameObject borderQuad = Instantiate(borderTile, parent);
+
+        borderQuad.transform.localScale = Vector3.one * cellSize;
+
+        Vector3 quadPosition = CellToWorld(cell); // Center of cell
+
+        quadPosition.y -= cellSize / 2; // Move to bottom of cell
+        quadPosition.y -= zOffset; // Prevent z-fighting
+        borderQuad.transform.position = quadPosition; // Set position 
+        borderQuad.transform.rotation = Quaternion.Euler(-90, 0, 0); // Rotate downwards
     }
 
 
