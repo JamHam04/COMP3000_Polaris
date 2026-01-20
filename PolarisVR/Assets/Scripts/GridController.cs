@@ -32,6 +32,10 @@ public class GridController : MonoBehaviour
 
     private const float zOffset = 0.001f; // Offset to prevent z-clipping
 
+    // Magnet rules (player positioning)
+    public int maxHorizontalDistance = 2; // Max horizontal cells from player to cellcube
+    public int maxVerticalDistance = 1; // Max vertical cells from player to cellcube
+
 
 
 
@@ -40,30 +44,7 @@ public class GridController : MonoBehaviour
         CreateCornerPillars();
         CreateTopOutline();
         CreateBottomOutline();
-        //for (int x = 0; x < gridX; x++)
-        //{
-        //    for (int z = 0; z < gridZ; z++)
-        //    {
-        //        Vector3Int cell = new Vector3Int(x, 0, z);
 
-        //        if (IsCellDisabled(cell)) continue; // skip disabled cells
-
-   
-        //        // Spawn floor cell
-        //        GameObject floorCell = Instantiate(floorCellPrefab, transform);
-        //        //GameObject roofCell = Instantiate(floorCellPrefab, transform);
-
-        //        Vector3 pos = CellToWorld(cell);
-        //        pos.y = gridCoordinates.y + 0.0001f;
-        //        floorCell.transform.position = pos; // set position
-
-                
-
-        //        //pos.y = gridCoordinates.y + gridY * cellSize;
-        //        //roofCell.transform.Rotate(180f, 0f, 0f);
-        //        //roofCell.transform.position = pos; // set position
-        //    }
-        //}
         CreateGridWalls();
 
 
@@ -233,7 +214,49 @@ public class GridController : MonoBehaviour
         return playerCell == cellCoords;
     }
 
-    // Check if player is in adjacent cell
+    // Check if player is in any of the 6 cells in front of cube face, and also on the same Y level
+    public bool IsPlayerInFrontCells(Vector3Int cellCoords, Vector3Int faceNormal, Vector3 playerPosition)
+    {
+        Vector3Int playerCell = worldToCell(playerPosition); // Player position relative to grid
+
+
+        // Horizontal faces
+        if (faceNormal.y == 0)
+        {
+            // Check vertical distance 
+            int distanceY = Mathf.Abs(playerCell.y - cellCoords.y);
+            if (distanceY > 1) return false;
+
+            int forwardX = cellCoords.x + faceNormal.x;
+            int forwardZ = cellCoords.z + faceNormal.z;
+
+            // Check horizontal ditance in front of face
+            int distanceX = Mathf.Abs(playerCell.x - forwardX);
+            int distanceZ = Mathf.Abs(playerCell.z - forwardZ);
+
+            if (distanceX <= 1 && distanceZ <= 1) return true;
+
+            return false;
+        }
+        // Vertical faces
+        else
+        {
+            // Check vertical distance 
+            int distanceY = Mathf.Abs(playerCell.y - cellCoords.y);
+            if (distanceY > maxVerticalDistance) return false;
+
+            // Check xz distanc
+            int distanceX = Mathf.Abs(playerCell.x - cellCoords.x);
+            int distanceZ = Mathf.Abs(playerCell.z - cellCoords.z);
+
+            // Check 3x3 cells in front of face normal
+            if (distanceX <= 1 && distanceZ <= 1) return true; // X and Z around the 0,0 centre.
+
+            return false;
+
+        }
+    }
+
 
 
     public GridObject GetCubeInCell(Vector3Int cellCoords)

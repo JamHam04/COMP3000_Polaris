@@ -112,7 +112,7 @@ public class GridObject : MonoBehaviour
             float raycastDistance = 0.8f;
 
 
-            Vector3 playerFeetPosition = playerController.transform.position + playerController.center - Vector3.up * (playerController.height / 2f);
+            Vector3 playerFeetPosition = GetPlayerFeetPosition();
 
             if (Physics.Raycast(playerFeetPosition, Vector3.down, out RaycastHit hitInfo, raycastDistance))
             {
@@ -380,7 +380,13 @@ public class GridObject : MonoBehaviour
             return false;
 
         // Vertical angle check:
-   
+
+        Vector3 playerFeetPosition = GetPlayerFeetPosition();
+        // Player grid cell check
+        if (!gridController.IsPlayerInFrontCells(currentCell, snappedFaceNormal, playerFeetPosition))
+        {
+            return false;
+        }
 
 
         return true;
@@ -443,5 +449,10 @@ public class GridObject : MonoBehaviour
         }
     }
 
+    // Move to somewhere else?
+    public Vector3 GetPlayerFeetPosition()
+    {
+        return playerController.transform.position + playerController.center - Vector3.up * (playerController.height / 2f);
+    }
 
 }
