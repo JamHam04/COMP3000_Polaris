@@ -34,6 +34,10 @@ public class GrdObjectInput : MonoBehaviour
     public bool isLeftHand = false;
     public bool isRightHand = false;
 
+    // Highlight timer (To reduce flickering)
+    public float highlightEndDuration = 0.05f;
+    private float highlightTimer = 0.0f;
+
     // 
 
     // Start is called before the first frame update
@@ -106,7 +110,7 @@ public class GrdObjectInput : MonoBehaviour
             }
         }
     }
-
+    
     void updateHighlight()
     {
         RaycastHit hit;
@@ -139,6 +143,8 @@ public class GrdObjectInput : MonoBehaviour
 
                 // Highlight new face
                 gridObject.HighlightFace(hit, snappedFaceNormal, canActivate);
+
+                highlightTimer = 0f; // Reset highlight timer
                 return;
             }
         }
@@ -146,8 +152,12 @@ public class GrdObjectInput : MonoBehaviour
         // Clear highlight if no longer hovering
         if (lastHoveredObject != null)
         {
-            lastHoveredObject.ClearHighlight();
-            lastHoveredObject = null;
+            highlightTimer += Time.deltaTime;
+            if (highlightTimer >= highlightEndDuration) { 
+                lastHoveredObject.ClearHighlight();
+                lastHoveredObject = null;
+                highlightTimer = 0f;
+            }
         }
     }
 

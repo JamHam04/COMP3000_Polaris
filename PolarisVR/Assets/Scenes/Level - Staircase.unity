@@ -4848,6 +4848,8 @@ MonoBehaviour:
   outlinePrefab: {fileID: 596825140}
   showGrid: 1
   borderTile: {fileID: 1161586786846691306, guid: 8ed10c7cf55e3c646981e1ea88977b28, type: 3}
+  maxHorizontalDistance: 2
+  maxVerticalDistance: 1
 --- !u!4 &114250060
 Transform:
   m_ObjectHideFlags: 0

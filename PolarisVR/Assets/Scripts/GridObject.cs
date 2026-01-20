@@ -199,6 +199,7 @@ public class GridObject : MonoBehaviour
     }
 
 
+
     public void HighlightFace(RaycastHit hit, Vector3 normal, bool canActivate)
     {
         Vector3Int snappedFaceNormal = SnapNormal(normal);
@@ -215,6 +216,9 @@ public class GridObject : MonoBehaviour
             activeHighlight.transform.localPosition = Vector3.zero;
             activeHighlight.transform.localScale = Vector3.one;
 
+        } else
+        {
+            activeHighlight.SetActive(true);
         }
 
         // Invaid face if cannot activate
@@ -273,8 +277,8 @@ public class GridObject : MonoBehaviour
     {
         if (activeHighlight != null)
         {
-            Destroy(activeHighlight);
-            activeHighlight = null;
+            //Destroy(activeHighlight);
+            activeHighlight.SetActive(false);
             highlightedFace = Vector3.zero;
 
         }
@@ -375,9 +379,9 @@ public class GridObject : MonoBehaviour
 
 
         // Distance checks
-        float maxDistance = gridController.cellSize * 2f;
-        if (Vector3.Distance(playerHead.position, faceCenter) > maxDistance)
-            return false;
+        //float maxDistance = gridController.cellSize * 2f;
+        //if (Vector3.Distance(playerHead.position, faceCenter) > maxDistance)
+        //    return false;
 
         // Vertical angle check:
 
@@ -386,6 +390,15 @@ public class GridObject : MonoBehaviour
         if (!gridController.IsPlayerInFrontCells(currentCell, snappedFaceNormal, playerFeetPosition))
         {
             return false;
+        }
+
+        // Player falling check
+        float raycastDistance = 0.5f; 
+
+
+        if (!Physics.Raycast(playerFeetPosition, Vector3.down, out RaycastHit hitInfo, raycastDistance))
+        {
+            return false; // Player is falling
         }
 
 

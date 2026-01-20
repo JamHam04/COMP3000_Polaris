@@ -214,7 +214,7 @@ public class GridController : MonoBehaviour
         return playerCell == cellCoords;
     }
 
-    // Check if player is in any of the 6 cells in front of cube face, and also on the same Y level
+    // Check if player is in 3x3 cells in front of face normal
     public bool IsPlayerInFrontCells(Vector3Int cellCoords, Vector3Int faceNormal, Vector3 playerPosition)
     {
         Vector3Int playerCell = worldToCell(playerPosition); // Player position relative to grid
@@ -227,14 +227,12 @@ public class GridController : MonoBehaviour
             int distanceY = Mathf.Abs(playerCell.y - cellCoords.y);
             if (distanceY > 1) return false;
 
-            int forwardX = cellCoords.x + faceNormal.x;
-            int forwardZ = cellCoords.z + faceNormal.z;
-
             // Check horizontal ditance in front of face
-            int distanceX = Mathf.Abs(playerCell.x - forwardX);
-            int distanceZ = Mathf.Abs(playerCell.z - forwardZ);
+            int distanceX = Mathf.Abs(playerCell.x - cellCoords.x);
+            int distanceZ = Mathf.Abs(playerCell.z - cellCoords.z);
 
-            if (distanceX <= 1 && distanceZ <= 1) return true;
+            // Check 3x3 cells in front of face normal
+            if (distanceX <= maxHorizontalDistance && distanceZ <= maxHorizontalDistance) return true;
 
             return false;
         }
@@ -245,7 +243,7 @@ public class GridController : MonoBehaviour
             int distanceY = Mathf.Abs(playerCell.y - cellCoords.y);
             if (distanceY > maxVerticalDistance) return false;
 
-            // Check xz distanc
+            // Checkhorizontal ditance in front of face
             int distanceX = Mathf.Abs(playerCell.x - cellCoords.x);
             int distanceZ = Mathf.Abs(playerCell.z - cellCoords.z);
 
