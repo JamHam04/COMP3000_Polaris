@@ -28,6 +28,7 @@ public class GridObject : MonoBehaviour
     private float cubeMoveSpeed = 0.5f; // Speed of cube movement
 
     public HashSet<Vector3Int> disabledFaces = new HashSet<Vector3Int>(); // Disabled faces based on occupied adjacent cells
+    public HashSet<Vector3Int> climbableFaces = new HashSet<Vector3Int>(); // Climbable faces
 
     Transform playerTransform;
     private bool isMoving = false;
@@ -60,6 +61,8 @@ public class GridObject : MonoBehaviour
         MoveToCell(currentCell);
 
         lastPosition = transform.position;
+
+        climbableFaces.Add(Vector3Int.forward);
 
     }
 
@@ -448,6 +451,42 @@ public class GridObject : MonoBehaviour
             default:
                 return false;
         }
+    }
+
+    // Climbable faces
+    public bool IsFaceClimbable(Vector3Int faceNormal)
+    {
+        return climbableFaces.Contains(faceNormal);
+    }
+
+
+    public IEnumerator ClimbFace(Transform playerTransform)
+    {
+        Vector3 startPosition = playerController.transform.position;
+
+        // Climb onto centre of cube 
+        Vector3 targetPosition = transform.position + Vector3.up * (gridController.cellSize / 2f); // Top face of cube
+
+        float climbDuration = 0.5f;
+
+        float elapsedTime = 0f;
+
+        while (elapsedTime < climbDuration)
+        {
+
+
+            Vector3 nextPosition = Vector3.Lerp(startPosition, targetPosition, elapsedTime / climbDuration);
+            Vector3 delta = nextPosition - playerController.transform.position;
+
+            playerController.Move(delta);
+
+
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        // End at centre
+        playerController.Move(targetPosition - playerController.transform.position);
+
     }
 
     public void SetEmission(bool enableGlow)

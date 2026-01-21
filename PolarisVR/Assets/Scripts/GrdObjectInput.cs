@@ -15,6 +15,7 @@ public class GrdObjectInput : MonoBehaviour
     // XR Toolkit button input
     public ActionBasedController xrController;
     public InputActionProperty magnetAction; // Set activate value
+    public InputActionProperty climbAction; // Set climb value
 
     public XRRayInteractor xrRayInteractor;
     private XRInteractorLineVisual lineVisual;
@@ -38,7 +39,9 @@ public class GrdObjectInput : MonoBehaviour
     public float highlightEndDuration = 0.05f;
     private float highlightTimer = 0.0f;
 
-    // 
+    // Climbable faces
+    private bool wasClimbActivated = false;
+    private bool isClimbActivated = false;
 
     // Start is called before the first frame update
     void Start()
@@ -58,6 +61,7 @@ public class GrdObjectInput : MonoBehaviour
 
         // VR input for magnet push/pull
         activateMagnetInput();
+        activateClimbInput();
 
         if (cooldownTimer > 0.0f)
         {
@@ -110,7 +114,54 @@ public class GrdObjectInput : MonoBehaviour
             }
         }
     }
-    
+
+    void activateClimbInput()
+    {
+        bool climbJustActivated = false;
+
+        // Check if climb button is pressed
+        float climbValue = climbAction.action.ReadValue<float>();
+
+        if (climbValue > activationThreshold)
+        {
+            isClimbActivated = true;
+        }
+        else
+        {
+            isClimbActivated = false;
+        }
+
+        // Check if climb is activated again
+        if (isClimbActivated && !wasClimbActivated)
+        {
+            climbJustActivated = true;
+        }
+        // Update previous state
+        wasClimbActivated = isClimbActivated;
+
+        if (climbJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f)
+        {
+            // Check if climb button is pressed
+            RaycastHit hit;
+            if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
+            {
+                if (lastHoveredObject != null && lastHoveredObject.canActivateMagnet(playerTransform, hit.normal, isLeftHand))
+                {
+                    Vector3Int dir = getActivationDirection(hit.normal);
+                    if (lastHoveredObject.IsFaceClimbable(dir))
+                    {
+                        // Climb face
+                        StartCoroutine(lastHoveredObject.ClimbFace(playerTransform));
+                    }
+                }
+            }
+
+
+        }
+    }
+
+
+
     void updateHighlight()
     {
         RaycastHit hit;
