@@ -29,6 +29,32 @@ public class Door : MonoBehaviour
 
     public float openSpeed = 2.0f;
 
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PlayerDoorCheck doorCheck = other.GetComponent<PlayerDoorCheck>();
+            if (doorCheck != null)
+            {
+                doorCheck.EnterDoor();
+            }
+        }
+
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            PlayerDoorCheck doorCheck = other.GetComponent<PlayerDoorCheck>();
+            if (doorCheck != null)
+            {
+                doorCheck.ExitDoor();
+            }
+        }
+    }
+
     void Start()
     {
         // Store initial positions
@@ -103,9 +129,9 @@ public class Door : MonoBehaviour
     void AnimateDoor()
     {
         // Target panel positions
-        Vector3 leftTargetPos = leftPanelStartPos + new Vector3(-1.0f, 0.5f, 0);
-        Vector3 rightTargetPos = rightPanelStartPos + new Vector3(1.0f, 0.5f, 0);
-        Vector3 bottomTargetPos = bottomPanelStartPos + new Vector3(0, -1.0f, 0);
+        Vector3 leftTargetPos = leftPanelStartPos + new Vector3(-2.0f, 1.0f, 0);
+        Vector3 rightTargetPos = rightPanelStartPos + new Vector3(2.0f, 1.0f, 0);
+        Vector3 bottomTargetPos = bottomPanelStartPos + new Vector3(0, -2.0f, 0);
 
         // Smoothly move panels
         if (isOpen)

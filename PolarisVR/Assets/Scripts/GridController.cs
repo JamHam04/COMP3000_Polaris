@@ -227,12 +227,22 @@ public class GridController : MonoBehaviour
             int distanceY = Mathf.Abs(playerCell.y - cellCoords.y);
             if (distanceY > 1) return false;
 
-            // Check horizontal ditance in front of face
-            int distanceX = Mathf.Abs(playerCell.x - cellCoords.x);
-            int distanceZ = Mathf.Abs(playerCell.z - cellCoords.z);
+            // Get forward direction for face
+            int forwardX = faceNormal.x;
+            int forwardZ = faceNormal.z;
 
-            // Check 3x3 cells in front of face normal
-            if (distanceX <= maxHorizontalDistance && distanceZ <= maxHorizontalDistance) return true;
+            // Check ditance in front of face
+            int forwardDistance = forwardX = (playerCell.x - cellCoords.x) * forwardX + (playerCell.z - cellCoords.z) * forwardZ;
+
+            // Check distance is it side of face
+            int sideDistance = forwardZ != 0 ? playerCell.x - cellCoords.x : playerCell.z - cellCoords.z;
+
+            // Check 3x3x2 area in front of face normal (x,y,z)
+            if (forwardDistance >= 0 && forwardDistance <= 2 && Mathf.Abs(sideDistance) <= 1) 
+            {
+                return true;
+            }
+
 
             return false;
         }

@@ -16,6 +16,7 @@ public class GrdObjectInput : MonoBehaviour
     public ActionBasedController xrController;
     public InputActionProperty magnetAction; // Set activate value
     public InputActionProperty climbAction; // Set climb value
+    public InputActionProperty menuAction; // Set menu value
 
     public XRRayInteractor xrRayInteractor;
     private XRInteractorLineVisual lineVisual;
@@ -26,6 +27,7 @@ public class GrdObjectInput : MonoBehaviour
     private bool isMagnetActivated = false; 
     public float magnetCooldown = 0.5f; // Cooldown time between activations
     public float cooldownTimer = 0.0f;
+    public PlayerDoorCheck playerDoorCheck;
 
     // Raycast
     public float raycastDistance = 10.0f; // To be used for magnet target
@@ -42,6 +44,7 @@ public class GrdObjectInput : MonoBehaviour
     // Climbable faces
     private bool wasClimbActivated = false;
     private bool isClimbActivated = false;
+    private float maxClimbDistance = 1.5f; // Max distance player can climb from
 
     // Start is called before the first frame update
     void Start()
@@ -51,6 +54,8 @@ public class GrdObjectInput : MonoBehaviour
 
         if (lineVisual != null)
             lineVisual.enabled = false;
+
+
     }
 
     // Update is called once per frame
@@ -63,6 +68,8 @@ public class GrdObjectInput : MonoBehaviour
         activateMagnetInput();
         activateClimbInput();
 
+
+
         if (cooldownTimer > 0.0f)
         {
             cooldownTimer -= Time.deltaTime;
@@ -71,6 +78,15 @@ public class GrdObjectInput : MonoBehaviour
 
     void activateMagnetInput()
     {
+
+        if (playerDoorCheck != null && playerDoorCheck.IsPlayerInsideDoor)
+        {
+            isMagnetActivated = false;
+            wasMagnetActivated = false;
+            return;
+        }
+
+
 
         bool magnetJustActivated = false;
 
@@ -141,21 +157,35 @@ public class GrdObjectInput : MonoBehaviour
 
         if (climbJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f)
         {
+
             // Check if climb button is pressed
             RaycastHit hit;
             if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
             {
-                if (lastHoveredObject != null && lastHoveredObject.canActivateMagnet(playerTransform, hit.normal, isLeftHand))
+                if (lastHoveredObject != null && lastHoveredObject.canActivateClimb(playerTransform, hit.normal))
                 {
                     Vector3Int dir = getActivationDirection(hit.normal);
+
+                    // Max distance check
+                    Vector3 faceCenter = lastHoveredObject.transform.position + (Vector3)dir * (lastHoveredObject.CellSize * 0.5f);
+
+                    Vector3 playerFeetPosition = lastHoveredObject.GetPlayerFeetPosition();
+                    float distanceToFace = Vector3.Distance(playerFeetPosition, faceCenter);
+
+                    if (distanceToFace > maxClimbDistance)
+                    {
+                        return;
+                    }
+
+
                     if (lastHoveredObject.IsFaceClimbable(dir))
                     {
                         // Climb face
-                        StartCoroutine(lastHoveredObject.ClimbFace(playerTransform));
+
+                        StartCoroutine(lastHoveredObject.ClimbFace());
                     }
                 }
             }
-
 
         }
     }
@@ -164,6 +194,19 @@ public class GrdObjectInput : MonoBehaviour
 
     void updateHighlight()
     {
+        if (playerDoorCheck != null && playerDoorCheck.IsPlayerInsideDoor)
+        {
+            // Clear highlight if inside door
+            if (lastHoveredObject != null)
+            {
+                lastHoveredObject.ClearHighlight();
+                lastHoveredObject = null;
+            }
+            if (lineVisual != null)
+                lineVisual.enabled = false;
+            return;
+        }
+
         RaycastHit hit;
 
         if (lineVisual != null)

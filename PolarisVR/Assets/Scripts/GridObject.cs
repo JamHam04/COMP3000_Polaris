@@ -9,7 +9,15 @@ public enum CubeType
     Purple
 }
 
-
+[System.Flags]
+public enum ClimbableFace
+{
+    None = 0,
+    Front = 1,
+    Back = 2,
+    Left = 4,
+    Right = 8
+}
 
 public class GridObject : MonoBehaviour
 {
@@ -38,11 +46,34 @@ public class GridObject : MonoBehaviour
     CharacterController playerController;
 
     // Cube type
-
     public CubeType cubeType;
 
-    // Start is called before the first frame update
-    void Start()
+    // CLimbable faces in inspector
+    public ClimbableFace ClimbableFaceSelect;
+
+
+    void Awake()
+    {
+        // Initialize climbable faces
+        if ((ClimbableFaceSelect.HasFlag(ClimbableFace.Front)))
+        {
+            climbableFaces.Add(Vector3Int.forward);
+        }
+        if ((ClimbableFaceSelect.HasFlag(ClimbableFace.Back)))
+        {
+            climbableFaces.Add(Vector3Int.back);
+        }
+        if ((ClimbableFaceSelect.HasFlag(ClimbableFace.Left)))
+        {
+            climbableFaces.Add(Vector3Int.left);
+        }
+        if ((ClimbableFaceSelect.HasFlag(ClimbableFace.Right)))
+        {
+            climbableFaces.Add(Vector3Int.right);
+        }
+    }
+        // Start is called before the first frame update
+        void Start()
     {
         // Get GridController script
         gridController = FindObjectOfType<GridController>();
@@ -62,7 +93,7 @@ public class GridObject : MonoBehaviour
 
         lastPosition = transform.position;
 
-        climbableFaces.Add(Vector3Int.forward);
+
 
     }
 
@@ -147,7 +178,7 @@ public class GridObject : MonoBehaviour
         //cubeCollider.enabled = true;
 
         // Exit current cell
-        gridController.ExitCell(currentCell);
+        //gridController.ExitCell(currentCell);
         // Update current cell
         currentCell = newCell;
         // Enter new cell
@@ -188,6 +219,7 @@ public class GridObject : MonoBehaviour
 
         if (!gridController.IsCellOccupied(newCell) && gridController.IsInGrid(newCell) && !gridController.IsCellDisabled(newCell) && !gridController.IsCellReserved (newCell))
         {
+            gridController.ExitCell(currentCell);
             gridController.ReserveCell(newCell, this); // Reserve new cell
 
             isMoving = true;
@@ -409,6 +441,49 @@ public class GridObject : MonoBehaviour
 
     }
 
+    // Climb activation check (similar to magnet without push/pull checks)
+    public bool canActivateClimb(Transform playerHead, Vector3 faceNormal)
+    {
+        Vector3Int snappedFaceNormal = SnapNormal(faceNormal); // Use snapped normal for face direction
+
+        
+        // Check is player is in front of gridobject face
+        Vector3 faceCenter = transform.position + (Vector3)snappedFaceNormal * (gridController.cellSize / 2f);// Cube face center
+
+        Vector3 toPlayer = (playerHead.position - faceCenter).normalized;
+        float toPlayerDot = Vector3.Dot(snappedFaceNormal, toPlayer);
+
+        // Check if player is in front of face
+        if (toPlayerDot < 0.2f)
+        {
+            return false; // Player is behind the face
+        }
+        
+        Vector3 toFace = (faceCenter - playerHead.position).normalized;
+        float toFaceDot = Vector3.Dot(playerHead.forward, toFace);
+        // Check if player is looking at face
+        if (toFaceDot < 0.3f)
+        {
+            return false; // Player is not looking at the face
+        }
+
+
+        // Player grid cell check
+        Vector3 playerFeetPosition = GetPlayerFeetPosition();
+        if (!gridController.IsPlayerInFrontCells(currentCell, snappedFaceNormal, playerFeetPosition))
+        {
+            return false;
+        }
+
+        // Player falling check
+        float raycastDistance = 0.5f;
+        if (!Physics.Raycast(playerFeetPosition, Vector3.down, out RaycastHit hitInfo, raycastDistance))
+        {
+            return false; // Player is falling
+        }
+        return true;
+    }
+
     public void UpdateDisabledFaces()
     {
         disabledFaces.Clear(); // Reset disabled faces on move
@@ -460,7 +535,7 @@ public class GridObject : MonoBehaviour
     }
 
 
-    public IEnumerator ClimbFace(Transform playerTransform)
+    public IEnumerator ClimbFace()
     {
         Vector3 startPosition = playerController.transform.position;
 
@@ -471,22 +546,33 @@ public class GridObject : MonoBehaviour
 
         float elapsedTime = 0f;
 
+        // Offset above cube (prevent hitting collider)
+        float climbOffset = playerController.height * 0.5f;
+        Vector3 topTarget = targetPosition + Vector3.up * climbOffset;
+
+        Vector3 lastPosition = startPosition;
+
         while (elapsedTime < climbDuration)
         {
+            float climbProgress = elapsedTime / climbDuration;
+            climbProgress = Mathf.SmoothStep(0f, 1f, climbProgress); // Ease lerp
 
+            // Move to top first
+            Vector3 firstPosition = Vector3.Lerp(startPosition, topTarget, climbProgress);
 
-            Vector3 nextPosition = Vector3.Lerp(startPosition, targetPosition, elapsedTime / climbDuration);
-            Vector3 delta = nextPosition - playerController.transform.position;
+            // Move down to target postion
+            Vector3 nextPosition = Vector3.Lerp(firstPosition, targetPosition, climbProgress);
 
+            Vector3 delta = nextPosition - lastPosition;
             playerController.Move(delta);
 
-
+            // Update last position
+            lastPosition = nextPosition; 
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        // End at centre
-        playerController.Move(targetPosition - playerController.transform.position);
 
+        playerController.Move(targetPosition - lastPosition);
     }
 
     public void SetEmission(bool enableGlow)
