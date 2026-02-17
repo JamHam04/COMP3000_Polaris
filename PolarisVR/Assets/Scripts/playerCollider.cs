@@ -7,11 +7,13 @@ public class PlayerCollider : MonoBehaviour
 
     public Transform headsetPosition;
 
+    // Collider Settings
     public float padding = 0.3f;
     public float minHeight = 0.5f;
     public float maxHeight = 2.2f;
-
     public float radiusFactor = 0.25f;
+
+
 
     private CharacterController characterController;
 

@@ -29,6 +29,12 @@ public class Door : MonoBehaviour
 
     public float openSpeed = 2.0f;
 
+    // Door audio
+    private AudioSource audioSource;
+    public AudioClip openSound;
+    public AudioClip closeSound;
+    
+
 
     void OnTriggerEnter(Collider other)
     {
@@ -40,6 +46,8 @@ public class Door : MonoBehaviour
                 doorCheck.EnterDoor();
             }
         }
+
+        
 
     }
 
@@ -65,8 +73,9 @@ public class Door : MonoBehaviour
         // Get door collider
         doorCollider = GetComponent<BoxCollider>();
 
-        // Show indicators based on how many linked triggers
-        
+        // Get AudioSource
+        audioSource = GetComponent<AudioSource>();
+
     }
 
     void Update()
@@ -114,6 +123,9 @@ public class Door : MonoBehaviour
             isOpen = true;
             if (doorCollider != null)
                 doorCollider.enabled = false;
+
+            if (audioSource != null && openSound != null)
+                audioSource.PlayOneShot(openSound);
         }
     }
     public void CloseDoor()
@@ -123,6 +135,9 @@ public class Door : MonoBehaviour
             isOpen = false;
             if (doorCollider != null)
                 doorCollider.enabled = true;
+
+            if (audioSource != null && closeSound!= null)
+                audioSource.PlayOneShot(closeSound);
         }
     }
 

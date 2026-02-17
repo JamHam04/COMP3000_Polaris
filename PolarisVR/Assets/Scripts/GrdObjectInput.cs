@@ -46,6 +46,10 @@ public class GrdObjectInput : MonoBehaviour
     private bool isClimbActivated = false;
     private float maxClimbDistance = 1.5f; // Max distance player can climb from
 
+    // Player Menu
+    public bool menuActive = false;
+    public GameObject menuCanvas;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -55,6 +59,7 @@ public class GrdObjectInput : MonoBehaviour
         if (lineVisual != null)
             lineVisual.enabled = false;
 
+        
 
     }
 
@@ -68,6 +73,21 @@ public class GrdObjectInput : MonoBehaviour
         activateMagnetInput();
         activateClimbInput();
 
+        // Menu input
+        if (menuAction.action != null && menuAction.action.WasPressedThisFrame())
+        {
+            ToggleMenu();
+        }
+        
+        if (menuActive && menuCanvas != null)
+        {
+            if (Vector3.Distance(menuCanvas.transform.position, playerTransform.position) > 3.0f)
+            {
+                menuActive = false;
+                menuCanvas.SetActive(false);
+                lineVisual.enabled = false;
+            }
+        }
 
 
         if (cooldownTimer > 0.0f)
@@ -209,6 +229,14 @@ public class GrdObjectInput : MonoBehaviour
 
         RaycastHit hit;
 
+        if (menuActive)
+        {
+            // Keep line visual on for menu
+            if (lineVisual != null)
+                lineVisual.enabled = true;
+            return;
+        }
+
         if (lineVisual != null)
             lineVisual.enabled = false;
 
@@ -300,6 +328,38 @@ public class GrdObjectInput : MonoBehaviour
         {
             return new Vector3Int(0, 0, (int)hitNormal.z);
         }
+    }
+
+    // Player Menu
+    public void ToggleMenu()
+    {
+        menuActive = !menuActive;
+
+        if (lineVisual != null)
+            lineVisual.enabled = menuActive;
+
+        // Show/hide menu canvas
+        if (menuActive)
+        {
+            if (menuCanvas != null)
+            {
+                menuCanvas.SetActive(true);
+                // Position menu canvas in front of player
+                menuCanvas.transform.position = playerTransform.position + playerTransform.forward * 1.5f;
+                menuCanvas.transform.rotation = Quaternion.LookRotation(playerTransform.forward, Vector3.up);
+
+            }
+        }
+        else
+        {
+            if (menuCanvas != null)
+            {
+                menuCanvas.SetActive(false);
+
+                lineVisual.enabled = false;
+            }
+        }
+
     }
 
     // Test raycasrt
