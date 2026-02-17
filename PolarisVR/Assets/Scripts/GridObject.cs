@@ -51,6 +51,11 @@ public class GridObject : MonoBehaviour
     // CLimbable faces in inspector
     public ClimbableFace ClimbableFaceSelect;
 
+    // Audio
+    public AudioSource cubeAudio;
+    public AudioClip moveClip;
+
+
 
     void Awake()
     {
@@ -223,6 +228,12 @@ public class GridObject : MonoBehaviour
             gridController.ReserveCell(newCell, this); // Reserve new cell
 
             isMoving = true;
+
+            // Play move sound
+            if (cubeAudio != null && moveClip != null)
+            {
+                cubeAudio.PlayOneShot(moveClip);
+            }   
 
             // Smooth movement to new cell
             moveCoroutine = StartCoroutine(MoveToPosition(gridController.CellToWorld(newCell), newCell, cubeMoveSpeed));

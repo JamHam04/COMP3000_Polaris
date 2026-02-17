@@ -21,6 +21,10 @@ public class CellTrigger : MonoBehaviour
     // Trigger type
     public CubeType triggerType;
 
+    // Audio
+    public AudioSource triggerAudio;
+    public AudioClip triggerSound;
+
 
     // Start is called before the first frame update
     void Start()
@@ -59,7 +63,11 @@ public class CellTrigger : MonoBehaviour
             if (isTriggerActive)
             {
                 activeCube = cubeInCell;
-  
+                // Play sound effect
+                if (triggerAudio != null && triggerSound != null)
+                {
+                    triggerAudio.PlayOneShot(triggerSound);
+                }
             }
             else
             {

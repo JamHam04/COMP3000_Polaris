@@ -50,6 +50,14 @@ public class GrdObjectInput : MonoBehaviour
     public bool menuActive = false;
     public GameObject menuCanvas;
 
+    // Audio 
+    public AudioSource handAudio;
+
+    public AudioClip highlightValidClip;
+    public AudioClip highlightInvalidClip;
+    public AudioClip activateClip;
+    public AudioClip invalidActivateClip;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -132,6 +140,7 @@ public class GrdObjectInput : MonoBehaviour
 
         if (magnetJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f)
         {
+            bool canActivate = false;
             // Check if magnet button is pressed
             RaycastHit hit;
             if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, raycastDistance))
@@ -143,9 +152,24 @@ public class GrdObjectInput : MonoBehaviour
 
 
                     Vector3Int targetCell = lastHoveredObject.currentCell + dir; // Target cell to move to
- 
+
+                    // Play audio
+                    if (handAudio != null && activateClip != null)
+                    {
+                        handAudio.PlayOneShot(activateClip);
+                    }
                     lastHoveredObject.MoveToCell(targetCell);
                     cooldownTimer = magnetCooldown; // Reset cooldown
+                    canActivate = true;
+                }
+            }
+
+            if (!canActivate)
+            {
+                // Play invalid audio
+                if (handAudio != null && highlightInvalidClip != null)
+                {
+                    handAudio.PlayOneShot(invalidActivateClip);
                 }
             }
         }
@@ -261,6 +285,19 @@ public class GrdObjectInput : MonoBehaviour
                         lastHoveredObject.ClearHighlight();
 
                     lastHoveredObject = gridObject; // Update prevous hovered object
+
+                    // Play audio 
+                    if (handAudio != null)
+                    {
+                        if (canActivate)
+                        {
+                            handAudio.PlayOneShot(highlightValidClip);
+                        }
+                        else
+                        {
+                            handAudio.PlayOneShot(highlightInvalidClip);
+                        }
+                    }
                 }
 
                 // Highlight new face
