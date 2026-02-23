@@ -5,6 +5,8 @@ using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 using TMPro;
 using UnityEngine.Audio;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class SettingsManager : MonoBehaviour
 {
@@ -28,6 +30,16 @@ public class SettingsManager : MonoBehaviour
     public Slider masterSlider;
     public Slider musicSlider;
     public Slider sfxSlider;
+
+    // Menu Panels
+    public GameObject MainPanel;
+    public GameObject VRPanel;
+    public GameObject GeneralPanel;
+    public GameObject ConfirmationPanel;
+    public TextMeshProUGUI confirmationText;
+
+    private UnityAction pendingAction;
+
 
 
     // Start is called before the first frame update
@@ -135,6 +147,76 @@ public class SettingsManager : MonoBehaviour
         }
     }
 
+    // Menu panel management
+    public void ShowVRPanel()
+    {
+        VRPanel.SetActive(true);
+        MainPanel.SetActive(false);
+        GeneralPanel.SetActive(false);
+        ConfirmationPanel.SetActive(false);
+    }
 
+    public void ShowGeneralPanel()
+    {
+        MainPanel.SetActive(false);
+        VRPanel.SetActive(false);
+        GeneralPanel.SetActive(true);
+        ConfirmationPanel.SetActive(false);
+    }
+
+
+    public void showMainPanel()
+    {
+        MainPanel.SetActive(true);
+        VRPanel.SetActive(false);
+        GeneralPanel.SetActive(false);
+        ConfirmationPanel.SetActive(false);
+    }
+
+    public void ShowConfirmation(string message, UnityAction onConfirm)
+    {
+        confirmationText.text = message;
+        pendingAction = onConfirm;
+        ConfirmationPanel.SetActive(true);
+        MainPanel.SetActive(false);
+        VRPanel.SetActive(false);
+        GeneralPanel.SetActive(false);
+    }
+
+    public void ConfirmAction()
+    {
+        pendingAction?.Invoke();
+        ConfirmationPanel.SetActive(false);
+    }
+
+    public void CancelAction()
+    {
+        pendingAction = null;
+        ConfirmationPanel.SetActive(false);
+        MainPanel.SetActive(true);
+    }
+
+    public void RestartLevel()
+    {
+        // Reload the current scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene(UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+
+    }
+
+    public void QuitGame()
+    {
+        // Load the main menu scene
+        UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+    }
+
+    public void ShowRestartConfirmation()
+    {
+        ShowConfirmation("Restart the level?", RestartLevel);
+    }
+
+    public void ShowQuitConfirmation()
+    {
+        ShowConfirmation("Return to main menu?", QuitGame);
+    }
 
 }
