@@ -10,7 +10,7 @@ public class PlayerCollider : MonoBehaviour
     // Collider Settings
     public float padding = 0.3f;
     public float minHeight = 0.5f;
-    public float maxHeight = 2.2f;
+    public float maxHeight = 1.7f;
     public float radiusFactor = 0.25f;
 
 
@@ -39,16 +39,23 @@ public class PlayerCollider : MonoBehaviour
     {
         // Y position of headset
         float headsetY = headsetPosition.position.y - transform.position.y;
+        float clampedY = Mathf.Clamp(headsetY + padding, minHeight, maxHeight);
 
-        // Height calculation
-        float height = Mathf.Clamp(headsetY + padding, minHeight, maxHeight); // Clamp to prevent going too low/high
+        characterController.height = clampedY; // Set height
+        characterController.radius = clampedY * radiusFactor; // Set radius
 
-        characterController.height = height; // Set height
-        characterController.radius = height * radiusFactor; // Set radius
-
-        // Center calculation
         Vector3 localHeadOffset = transform.InverseTransformPoint(headsetPosition.position);
 
-        characterController.center = new Vector3(localHeadOffset.x, height * 0.5f, localHeadOffset.z); // Set center
+
+        // Center calculation
+        characterController.center = new Vector3(localHeadOffset.x, clampedY * 0.5f, localHeadOffset.z); // Set center
+
+        // Limit headset Y position
+        Vector3 localHeadsetPosition = headsetPosition.localPosition;
+        localHeadsetPosition.y = Mathf.Min(localHeadsetPosition.y, maxHeight - padding);
+        headsetPosition.localPosition = localHeadsetPosition;
+
+
+
     }
 }

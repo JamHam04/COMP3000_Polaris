@@ -8,6 +8,30 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: aee85d23d14eed9488aa9c74a2bd9030
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 1 - Push & Pull.unity
+    guid: 729e3006ca70b7c4c8f5b915fb615c11
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 2 - Red and Blue.unity
+    guid: 8a5417309d9a36143be0deb13fbbf0ce
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 3 - Up & Over.unity
+    guid: 02fb71769f804c54fb58879f4ad0070a
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 4 - Window Switch.unity
+    guid: 8760cf823e0f1874a8352ff38dede264
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 5 - Staircase.unity
+    guid: b7f045e455308114393e6388e3381822
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 6 - Climbing Around.unity
+    guid: 3f3a31cc31c05a24c8fa973018c9e87f
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 7 - BridgeTheGap.unity
+    guid: 20d64441289cb894dbe8886d49cbe5ff
+  - enabled: 1
+    path: Assets/Scenes/Final Levels/Level 8 - Pedastal.unity
+    guid: e3e422753c3e9b44cae94bd1cf5a0bc5
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: c979a17b8e9b5f24bad4cf9c525e3318, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: bca361985cb7b994697242dea4df81bf, type: 2}
