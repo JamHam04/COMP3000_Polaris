@@ -67,7 +67,7 @@ public class GrdObjectInput : MonoBehaviour
         if (lineVisual != null)
             lineVisual.enabled = false;
 
-        
+        playerDoorCheck = GetComponentInParent<PlayerDoorCheck>();
 
     }
 
@@ -116,6 +116,8 @@ public class GrdObjectInput : MonoBehaviour
 
 
 
+
+
         bool magnetJustActivated = false;
 
         // Check if magnet button is pressed
@@ -138,7 +140,7 @@ public class GrdObjectInput : MonoBehaviour
         // Update previous state
         wasMagnetActivated = isMagnetActivated;
 
-        if (magnetJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f)
+        if (magnetJustActivated && gridObject != null && playerTransform != null && cooldownTimer <= 0f && (playerDoorCheck == null || !playerDoorCheck.IsPlayerInsideDoor))
         {
             bool canActivate = false;
             // Check if magnet button is pressed
@@ -167,7 +169,7 @@ public class GrdObjectInput : MonoBehaviour
             if (!canActivate)
             {
                 // Play invalid audio
-                if (handAudio != null && highlightInvalidClip != null)
+                if (handAudio != null && invalidActivateClip != null)
                 {
                     handAudio.PlayOneShot(invalidActivateClip);
                 }

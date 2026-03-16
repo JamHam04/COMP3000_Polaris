@@ -51,7 +51,9 @@ public class SettingsManager : MonoBehaviour
     public float sfxVolumeDefault = 0.5f;
     public bool seatedModeDefault = false;
     public bool muteModeDefault = false;
-    
+
+    public Canvas canvas;
+
 
 
     private UnityAction pendingAction;
@@ -83,9 +85,20 @@ public class SettingsManager : MonoBehaviour
         if (cameraHeightOffset == null)
             cameraHeightOffset = FindObjectOfType<CameraHeightOffset>();
 
-        // UI references
-        Canvas canvas = FindObjectOfType<Canvas>(true);
 
+
+        // Find canvas
+        Canvas[] canvases = FindObjectsOfType<Canvas>(true);
+        foreach (Canvas c in canvases)
+        {
+            if (c.gameObject.name == "Canvas")
+            {
+                canvas = c;
+                break;
+            }
+        }
+
+        // UI references
         MainPanel = canvas.transform.Find("MainPanel")?.gameObject;
         VRPanel = canvas.transform.Find("VRSettingsPanel")?.gameObject;
         GeneralPanel = canvas.transform.Find("GeneralSettingsPanel")?.gameObject;
@@ -100,7 +113,7 @@ public class SettingsManager : MonoBehaviour
         muteToggle = GeneralPanel?.transform.Find("MuteToggle")?.GetComponent<Toggle>();
 
 
-        confirmationText = canvas.GetComponentInChildren<TextMeshProUGUI>(true);
+        confirmationText = ConfirmationPanel?.transform.Find("ConfirmationText")?.GetComponent<TextMeshProUGUI>();
 
         // Assign button listeners
         if (MainPanel != null)
