@@ -252,6 +252,7 @@ public class GridObject : MonoBehaviour
         Vector3Int pushCell = currentCell - snappedFaceNormal;
         Vector3Int pullCell = currentCell + snappedFaceNormal;
 
+
         bool canPull = gridController.IsInGrid(pullCell) && !gridController.IsCellOccupied(pullCell) && !gridController.IsCellDisabled(pullCell) && !gridController.IsCellReserved(pullCell);
         bool canPush = gridController.IsInGrid(pushCell) && !gridController.IsCellOccupied(pushCell) && !gridController.IsCellDisabled(pushCell) && !gridController.IsCellReserved(pushCell);
 
@@ -268,7 +269,13 @@ public class GridObject : MonoBehaviour
         }
 
         // Invaid face if cannot activate
-        bool invalidFace = !canActivate;  
+        bool invalidFace = !canActivate;
+
+        if (disabledFaces.Contains(snappedFaceNormal))
+        {
+            invalidFace = true;
+        }
+
 
         // Handle highlight for cube types
         switch (cubeType)
@@ -354,6 +361,10 @@ public class GridObject : MonoBehaviour
     {
         Vector3Int snappedFaceNormal = SnapNormal(faceNormal); // Use snapped normal for face direction
 
+        if (disabledFaces.Contains(snappedFaceNormal))
+        {
+            return false;
+        }
         // Check adjacent cell in face normal direction
         Vector3Int pushCell = currentCell - snappedFaceNormal;
         Vector3Int pullCell = currentCell + snappedFaceNormal;
@@ -465,7 +476,7 @@ public class GridObject : MonoBehaviour
         float toPlayerDot = Vector3.Dot(snappedFaceNormal, toPlayer);
 
         // Check if player is in front of face
-        if (toPlayerDot < 0.2f)
+        if (toPlayerDot < 0.0f)
         {
             return false; // Player is behind the face
         }

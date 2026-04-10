@@ -177,6 +177,7 @@ public class GridController : MonoBehaviour
         if (!occupiedCells.ContainsKey(cellCoords))
         {
             occupiedCells.Add(cellCoords, obj);
+            UpdateAdjacentObjects(cellCoords); // Update adjacent objects
         }
     }
 
@@ -187,6 +188,27 @@ public class GridController : MonoBehaviour
         if (occupiedCells.ContainsKey(cellCoords))
         {
             occupiedCells.Remove(cellCoords);
+            UpdateAdjacentObjects(cellCoords); // Update adjacent objects
+        }
+    }
+
+    // Update adjacent objects when object moves within grid
+    void UpdateAdjacentObjects(Vector3Int cell) 
+    {
+        // Check adjacent cells (6 directions)
+        Vector3Int[] directions = new Vector3Int[]
+        {
+           Vector3Int.right, Vector3Int.left, Vector3Int.up, Vector3Int.down, Vector3Int.forward, Vector3Int.back
+        };
+
+        foreach (var dir in directions)
+        {
+            Vector3Int adjacentCell = cell + dir;
+            if (IsInGrid(adjacentCell) && occupiedCells.ContainsKey(adjacentCell))
+            {
+                GridObject adjacentObj = occupiedCells[adjacentCell];
+                adjacentObj.UpdateDisabledFaces(); // Update adjacent object's disabled faces
+            }
         }
     }
 
